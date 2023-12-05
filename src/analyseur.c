@@ -1,9 +1,11 @@
+
+#include <sys/types.h>
+#include <pcap.h>
 #include <stdio.h>
 #include <time.h>
-#include <pcap.h>
-#include <netinet/in.h>
-#include <netinet/if_ether.h>
-#include "analyseur.h"
+
+//#include "headers.h"
+//#include "packet_parser.h"
 
 
 char errbuf[PCAP_ERRBUF_SIZE];
@@ -44,6 +46,8 @@ int main(int argc, char *argv[]) {
     int packet_count_limit = 1;
     int timeout_limit = 10000; /* In milliseconds */
 
+    print_all_devs();
+
     // Find a device
     device = pcap_lookupdev(errbuf);
     if (device == NULL) {
@@ -73,10 +77,10 @@ int main(int argc, char *argv[]) {
         printf("Jacked a packet with length of [%d]\n", packet_header.len);
     }
 
-    /* Our function to output some info */
-    print_packet_info(packet, packet_header);
+//     /* Our function to output some info */
+//     print_packet_info(packet, packet_header);
 
-    /* Quitting*/
-    pcap_close(handle);
+    // /* Quitting*/
+    // pcap_close(handle);
     return 0;
 }

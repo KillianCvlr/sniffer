@@ -1,0 +1,17 @@
+{
+    "files.associations": {
+        "ip.h": "c",
+        "ip_icmp.h": "c",
+        "ethernet.h": "c",
+        "ether.h": "c",
+        "if_ether.h": "c",
+        "tcp.h": "c",
+        "stdint.h": "c",
+        "types.h": "c",
+        "pcap.h": "c",
+        "if_arp.h": "c",
+        "stdio.h": "c",
+        "headers.h": "c"
+    },
+    "C_Cpp.errorSquiggles": "disabled"
+}
