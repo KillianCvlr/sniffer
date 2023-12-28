@@ -9,7 +9,7 @@ void parse_ethernet(const u_char *packet, int verbose, int prof) {
     case 1:
     case 2:
     case 3:
-        PRINT_NEW_STATE(prof, "ETHERNET :\n");
+        PRINT_NEW_STATE(prof, verbose, "ETHERNET");
 
         if (verbose == 1) break; // No need to print the MACs
 
@@ -49,14 +49,14 @@ void parse_arp(const u_char *packet, uint8_t *ether_dhost, uint8_t *ether_shost,
     case 1:
     case 2: 
     case 3:
-        PRINT_NEW_STATE(prof, "ARP :\n");
+        PRINT_NEW_STATE(prof, verbose, "ARP");
 
         if (verbose == 1) break; // No need to print the MACs
 
         PRINT_TREE(prof, "MAC Source : ");
-        print_mac(arp_header->arp_sha); print("\n");
+        print_mac(arp_header->arp_sha); printf("\n");
         PRINT_TREE(prof, "MAC Destination : ");
-        print_mac(arp_header->arp_tha); print("\n");
+        print_mac(arp_header->arp_tha); printf("\n");
 
         if(verbose == 2) break; // No need to print the rest of the header
 
@@ -101,11 +101,11 @@ void parse_arp(const u_char *packet, uint8_t *ether_dhost, uint8_t *ether_shost,
         PRINT_TREE(prof, "Protocol size : %i\n", arp_header->ea_hdr.ar_pln);
         PRINT_TREE(prof, "Opcode : %i\n", ntohs(arp_header->ea_hdr.ar_op));
         PRINT_TREE(prof, "Sender MAC : ");
-        print_mac(arp_header->arp_sha); print("\n");
+        print_mac(arp_header->arp_sha); printf("\n");
         PRINT_TREE(prof, "Sender IP : %i.%i.%i.%i\n", arp_header->arp_spa[0],
             arp_header->arp_spa[1], arp_header->arp_spa[2], arp_header->arp_spa[3]);
         PRINT_TREE(prof, "Target MAC : ");
-        print_mac(arp_header->arp_tha); print("\n");
+        print_mac(arp_header->arp_tha); printf("\n");
         PRINT_TREE(prof, "Target IP : %i.%i.%i.%i\n", arp_header->arp_tpa[0],
                 arp_header->arp_tpa[1], arp_header->arp_tpa[2], arp_header->arp_tpa[3]);
         
@@ -121,7 +121,7 @@ void parse_ipv4(const u_char *packet, int verbose, int prof) {
     case 1:
     case 2:    
     case 3:
-        PRINT_NEW_STATE(prof, "IPV4 :\n");
+        PRINT_NEW_STATE(prof, verbose, "IPV4");
 
         if (verbose == 1) break; // No need to print the IP addresses
 
@@ -153,7 +153,7 @@ void parse_ipv4(const u_char *packet, int verbose, int prof) {
         parse_tcp(packet + (ip->ip_hl * 4), verbose, prof +1, size);
         break;
     case 0x01:
-        PRINT_NEW_STATE(prof, "ICMP \n");
+        parse_icmp(packet + (ip->ip_hl * 4), verbose, prof +1);
         break;
     }
 }
@@ -164,7 +164,7 @@ void parse_ipv6(const u_char *packet, int verbose, int prof) {
     case 1:
     case 2:
     case 3:
-        PRINT_NEW_STATE(prof, "IPV6 :\n");
+        PRINT_NEW_STATE(prof, verbose, "IPV6");
 
         if (verbose == 1) break; // No need to print the IP addresses
 
@@ -193,7 +193,7 @@ void parse_ipv6(const u_char *packet, int verbose, int prof) {
         parse_tcp(packet + sizeof(struct ip6_hdr), verbose, prof +1, size);
         break;
     case 0x3a:
-        PRINT_NEW_STATE(prof, "ICMPv6\n");
+        PRINT_NEW_STATE(prof, verbose, "ICMPv6");
         break;
     }
 }
@@ -204,7 +204,7 @@ void parse_udp(const u_char *packet, int verbose, int prof, int size) {
     case 1:
     case 2:
     case 3:
-        PRINT_NEW_STATE(prof, "UDP :\n");
+        PRINT_NEW_STATE(prof, verbose, "UDP");
 
         if (verbose == 1) break; // No need to print the ports
 
@@ -238,7 +238,7 @@ void parse_tcp(const u_char *packet, int verbose, int prof, int size){
     case 1:
     case 2:
     case 3:
-        PRINT_NEW_STATE(prof, "TCP :\n");
+        PRINT_NEW_STATE(prof, verbose, "TCP");
 
         if (verbose == 1) break; // No need to print the ports
 
@@ -288,14 +288,14 @@ void parse_icmp(const u_char *packet, int verbose, int prof) {
     case 1:
     case 2:
     case 3:
-        PRINT_NEW_STATE(prof, "ICMP :\n");
+        PRINT_NEW_STATE(prof, verbose, "ICMP");
 
         if (verbose == 1) break; // No need to print the rest of the header
 
         PRINT_TREE(prof, "Type : %i\n", icmp->icmp_type);
 
         if (verbose == 2) break; // No need to print the rest of the header
-        
+
         PRINT_TREE(prof, "Code : %i\n", icmp->icmp_code);
         PRINT_TREE(prof, "Checksum : 0x%x\n", ntohs(icmp->icmp_cksum));
         break;

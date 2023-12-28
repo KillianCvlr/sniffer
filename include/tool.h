@@ -6,53 +6,50 @@
 #include <string.h>
 #include <netinet/in.h>
 
-
 /**
- * @brief Macro pour l'affichage de l'arbre du parsage
- * (même protocole donc même profondeur)
+ * @brief Macro for displaying the parsing tree
+ * (same protocol, same depth)
  */
-#define PRINT_TREE(prof, args...) do { \
-    print_tree(prof); \
+#define DISPLAY_TREE(prof, args...) do { \
+    display_tree(prof); \
     printf(args); \
 } while(0)
 
 /**
- * @brief Macro pour l'affichage de l'arbre du parsage
- * (nouveau protocole donc nouvelle profondeur)
+ * @brief Macro for displaying the parsing tree
+ * (new protocol, new depth)
  *
  */
-#define PRINT_NEW_STATE(prof, args...) do { \
-    print_new_state(prof); \
-    printf(args); \
+#define DISPLAY_NEW_STATE(prof, verbose, message) do { \
+    display_new_state(prof, verbose); \
+    printf(message); \
+    if(verbose >= 2) printf("\n"); \
 } while(0)
 
 /**
- * @brief Fonction affichant l'arbre du parsage pour la lisibilité
- * S'occupe de faire les tab et la mise en page
+ * @brief Function displaying the parsing tree for readability
+ * Handles indentation and formatting
  *
  */
-
-void print_tree(int prof);
+void display_tree(int prof);
 
 /**
- * @brief Fonction affichant l'arbre du parsage pour la lisibilité
- * S'occupe de faire le passage à une nouvelle profondeur
+ * @brief Function displaying the parsing tree for readability
+ * Handles transitioning to a new depth
  *
  */
-
-void print_new_state(int prof);
+void display_new_state(int prof, int verbose);
 
 /**
- * @brief Fonction affichant une adresse MAC
+ * @brief Function displaying a MAC address
  *
  */
-void print_mac(uint8_t *mac);
+void display_mac(uint8_t *mac);
 
 /**
- * @brief  Fonction affichant l'adresse IPv6
+ * @brief Function displaying an IPv6 address
  *
  */
-
-void print_ipv6(struct in6_addr);
+void display_ipv6(struct in6_addr);
 
 #endif

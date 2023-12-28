@@ -21,12 +21,13 @@ int main(int argc, char **argv[]) {
 
     //Options de l'utilisateur
     options_t options;
+    
+    printf("Options initialisation... \n");
     initOption(&options);
-    printf("Options initialisées \n");
+    printf("Option parsing... \n");
     parseArgs(argc, argv, &options);
-    printf("Parsage finalisé\n");
+    printf("Options checking... \n");
     checkOption(&options);
-    printf("Options vérifiées\n");
     
     char *device;
     pcap_t *handle;
@@ -43,7 +44,7 @@ int main(int argc, char **argv[]) {
     }
 
     // Afficher le nom de l'interface par défaut
-    printf("Interface par défaut: %s\n", device);
+    printf("Listening on standard device : %s\n", device);
 
     /* Open device for live capture */
     handle = pcap_open_live(
@@ -67,8 +68,6 @@ int main(int argc, char **argv[]) {
         print_packet_info(packet, packet_header);
         parse_ethernet(packet, options.verbose, 0);
     }
-
-    
 
     /* Quitting*/
     pcap_close(handle);

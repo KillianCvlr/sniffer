@@ -12,110 +12,109 @@
 #include <netinet/tcp.h>
 #include <net/if_arp.h>
 
+#define IP_HEADER_LENGTH(ip)    (((ip)->ip_vhl) & 0x0f)
+#define IP_VERSION(ip)          (((ip)->ip_vhl) >> 4)
 
-#define IP_HL(ip)		(((ip)->ip_vhl) & 0x0f)
-#define IP_V(ip)		(((ip)->ip_vhl) >> 4)
+/*	Used Headers ********************************************************/
 
-/*	Entetes utilisées ********************************************************/
-
-// Structure de l'en-tete BOOTP
+// Structure of the BOOTP header
 struct bootp_header {
-    uint8_t op;          // Type d'opération (1 pour demande, 2 pour réponse)
-    uint8_t htype;       // Type de matériel (1 pour Ethernet)
-    uint8_t hlen;        // Longueur de l'adresse matérielle (6 pour une adresse MAC Ethernet)
-    uint8_t hops;        // Nombre de relais intermédiaires
-    uint32_t xid;        // Identifiant d'échange
-    uint16_t secs;       // Durée depuis le début de l'opération
-    uint16_t flags;      // Flags spéciaux
-    uint8_t ciaddr[4];   // Adresse IP client
-    uint8_t yiaddr[4];   // Adresse IP attribuée
-    uint8_t siaddr[4];   // Adresse IP du serveur d'amorçage
-    uint8_t giaddr[4];   // Adresse IP de l'agent de relais
-    uint8_t chaddr[16];  // Adresse matérielle client (MAC)
-    uint8_t sname[64];   // Nom du serveur d'amorçage
-    uint8_t file[128];   // Nom du fichier d'amorçage
-    uint32_t magic;      // Signature magique (0x63825363)
-    uint8_t options[64]; // Options spécifiques BOOTP/DHCP
+    uint8_t op;          // Operation type (1 for request, 2 for reply)
+    uint8_t htype;       // Hardware type (1 for Ethernet)
+    uint8_t hlen;        // Hardware address length (6 for Ethernet MAC address)
+    uint8_t hops;        // Number of intermediate relays
+    uint32_t xid;        // Exchange identifier
+    uint16_t secs;       // Time since the start of the operation
+    uint16_t flags;      // Special flags
+    uint8_t ciaddr[4];   // Client IP address
+    uint8_t yiaddr[4];   // Assigned IP address
+    uint8_t siaddr[4];   // IP address of the boot server
+    uint8_t giaddr[4];   // IP address of the relay agent
+    uint8_t chaddr[16];  // Client hardware address (MAC)
+    uint8_t sname[64];   // Boot server name
+    uint8_t file[128];   // Boot file name
+    uint32_t magic;      // Magic signature (0x63825363)
+    uint8_t options[64]; // BOOTP/DHCP specific options
 };
 
-// Structure de l'en-tete DHCP
+// Structure of the DHCP header
 struct dhcp_header {
-    uint8_t op;          // Type d'opération (1 pour demande, 2 pour réponse)
-    uint8_t htype;       // Type de matériel (1 pour Ethernet)
-    uint8_t hlen;        // Longueur de l'adresse matérielle (6 pour une adresse MAC Ethernet)
-    uint8_t hops;        // Nombre de relais intermédiaires
-    uint32_t xid;        // Identifiant d'échange
-    uint16_t secs;       // Durée depuis le début de l'opération
-    uint16_t flags;      // Flags spéciaux
-    uint8_t ciaddr[4];   // Adresse IP client
-    uint8_t yiaddr[4];   // Adresse IP attribuée
-    uint8_t siaddr[4];   // Adresse IP du serveur d'amorçage
-    uint8_t giaddr[4];   // Adresse IP de l'agent de relais
-    uint8_t chaddr[16];  // Adresse matérielle client (MAC)
-    uint8_t sname[64];   // Nom du serveur d'amorçage
-    uint8_t file[128];   // Nom du fichier d'amorçage
-    uint32_t magic;      // Signature magique (0x63825363)
-    uint8_t options[64]; // Options spécifiques BOOTP/DHCP
+    uint8_t op;          // Operation type (1 for request, 2 for reply)
+    uint8_t htype;       // Hardware type (1 for Ethernet)
+    uint8_t hlen;        // Hardware address length (6 for Ethernet MAC address)
+    uint8_t hops;        // Number of intermediate relays
+    uint32_t xid;        // Exchange identifier
+    uint16_t secs;       // Time since the start of the operation
+    uint16_t flags;      // Special flags
+    uint8_t ciaddr[4];   // Client IP address
+    uint8_t yiaddr[4];   // Assigned IP address
+    uint8_t siaddr[4];   // IP address of the boot server
+    uint8_t giaddr[4];   // IP address of the relay agent
+    uint8_t chaddr[16];  // Client hardware address (MAC)
+    uint8_t sname[64];   // Boot server name
+    uint8_t file[128];   // Boot file name
+    uint32_t magic;      // Magic signature (0x63825363)
+    uint8_t options[64]; // BOOTP/DHCP specific options
 };
 
-// Structure de l'en-tete DNS
+// Structure of the DNS header
 struct dns_header {
-    uint16_t id;          // Identifiant de la requête
-    uint16_t flags;       // Drapeaux (QR, Opcode, AA, TC, RD, RA, Z, RCODE)
-    uint16_t qdcount;     // Nombre de questions dans la section Question
-    uint16_t ancount;     // Nombre d'entrées dans la section Réponse
-    uint16_t nscount;     // Nombre d'entrées dans la section Autorité
+    uint16_t id;          // Query identifier
+    uint16_t flags;       // Flags (QR, Opcode, AA, TC, RD, RA, Z, RCODE)
+    uint16_t qdcount;     // Number of questions in the Question section
+    uint16_t ancount;     // Number of entries in the Answer section
+    uint16_t nscount;     // Number of entries in the Authority section
     uint16_t arcount;
 };
 
-// Structure de l'en-tete HTTP
+// Structure of the HTTP header
 struct http_header {
-    // Ligne de requête (request line) pour une requête HTTP
-    char method[10];       // Méthode HTTP (GET, POST, etc.)
-    char uri[256];         // URI de la ressource demandée
-    char version[10];      // Version HTTP (HTTP/1.0, HTTP/1.1, etc.)
+    // HTTP request line
+    char method[10];       // HTTP method (GET, POST, etc.)
+    char uri[256];         // URI of the requested resource
+    char version[10];      // HTTP version (HTTP/1.0, HTTP/1.1, etc.)
 
-    // Ligne de statut (status line) pour une réponse HTTP
-    uint16_t status_code;  // Code d'état HTTP (200 OK, 404 Not Found, etc.)
-    char reason_phrase[256];// Raison de l'état HTTP (OK, Not Found, etc.)
+    // HTTP response line
+    uint16_t status_code;  // HTTP status code (200 OK, 404 Not Found, etc.)
+    char reason_phrase[256];// HTTP status reason phrase (OK, Not Found, etc.)
 
-    // En-têtes HTTP
-    char headers[1024];     // En-têtes HTTP (champ générique pour les en-têtes)
+    // HTTP headers
+    char headers[1024];     // HTTP headers (generic field for headers)
 
-    // Corps du message (payload)
-    char body[4096];        // Corps du message (champ générique pour le corps)
+    // Message body (payload)
+    char body[4096];        // Message body (generic field for body)
 };
 
-// Structure de l'en-tete FTP
+// Structure of the FTP header
 struct ftp_header {
-    // Commande FTP
-    char command[10];       // Commande FTP (USER, PASS, LIST, RETR, etc.)
+    // FTP command
+    char command[10];       // FTP command (USER, PASS, LIST, RETR, etc.)
 
-    // Argument de la commande FTP
-    char argument[256];     // Argument de la commande FTP
+    // FTP command argument
+    char argument[256];     // FTP command argument
 
-    // Paramètres FTP supplémentaires
-    char params[512];       // Paramètres FTP supplémentaires
+    // Additional FTP parameters
+    char params[512];       // Additional FTP parameters
 
-    // Réponse FTP
-    uint16_t code;          // Code de réponse FTP (ex: 200, 404, etc.)
-    char response[256];      // Message de réponse FTP
+    // FTP response
+    uint16_t code;          // FTP response code (e.g., 200, 404, etc.)
+    char response[256];      // FTP response message
 };
 
-// Structure de l'en-tete SMTP
+// Structure of the SMTP header
 struct smtp_header {
-    // Commande SMTP
-    char command[10];       // Commande SMTP (EHLO, HELO, MAIL, RCPT, etc.)
+    // SMTP command
+    char command[10];       // SMTP command (EHLO, HELO, MAIL, RCPT, etc.)
 
-    // Argument de la commande SMTP
-    char argument[256];     // Argument de la commande SMTP
+    // SMTP command argument
+    char argument[256];     // SMTP command argument
 
-    // Paramètres SMTP supplémentaires
-    char params[512];       // Paramètres SMTP supplémentaires
+    // Additional SMTP parameters
+    char params[512];       // Additional SMTP parameters
 
-    // Réponse SMTP
-    uint16_t code;          // Code de réponse SMTP (ex: 220, 500, etc.)
-    char response[256];      // Message de réponse SMTP
+    // SMTP response
+    uint16_t code;          // SMTP response code (e.g., 220, 500, etc.)
+    char response[256];      // SMTP response message
 };
 
 #endif

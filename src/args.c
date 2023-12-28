@@ -2,19 +2,19 @@
 
 void printUsage(void){
     printf("Usage : sudo ./bin/sniffer <options\n"
-    "Options disponibles : \n"
-    "\t -i <iterface> : Interface à utiliser pour la capture de packet\n"
-    "\t -o <fichier> : Fichier à lire pour l'analyse de trames\n"
-    "\t -f <filtre> : Filtre à utiliser pendant l'analyse des trames\n"
-    "\t -v <1|2|3> : Verbosité de l'analyse (1 = concis, 2 = synthétique, 3 = complet)\n"
-    "\t -n <nb_paquet> : Nombre de paquets à analyser\n");
+    "Available options : \n"
+    "\t -i <device> : Device to listen on\n"
+    "\t -o <file> : File to open (.pcap)\n"
+    "\t -f <filter> : Filter used during sniffing\n"
+    "\t -v <1|2|3> : Verbosity of the output(1 = concise, 2 = synthetic, 3 = complete)\n"
+    "\t -n <integer> : Number of packet to analyse\n");
 }
 
 
 void initOption(options_t *options){
     options->input = 0;
     options->verbose = -1;
-    options->filtre = 0;
+    options->filter = 0;
     options->bpf = NULL;
     options->inputFilename = NULL;
     options->inputFile = NULL;
@@ -39,7 +39,7 @@ void parseArgs(int argc, char **argv, options_t *options){
             break;
 
         case 'f':
-            options->filtre = 1;
+            options->filter = 1;
             options->bpf = optarg;
             break;
 
@@ -86,18 +86,18 @@ void print_all_devs(){
     
     // Récupérer la liste des interfaces
     if (pcap_findalldevs(&interfaces, errbuf) == -1) {
-        fprintf(stderr, "Erreur en récupérant les interfaces: %s\n", errbuf);
+        fprintf(stderr, "Unable to catch the devices: %s\n", errbuf);
         return;
     }
 
     // Parcourir la liste des interfaces
     pcap_if_t *interface;
     for (interface = interfaces; interface != NULL; interface = interface->next) {
-        printf("Nom: %s\n", interface->name);
+        printf("Name: %s\n", interface->name);
         if (interface->description)
-            printf("Description: %s\n", interface->description);
+            printf("| %s\n", interface->description);
         else
-            printf("Pas de description disponible\n");
+            printf("| \n");
         printf("\n");
     }
 
@@ -107,35 +107,31 @@ void print_all_devs(){
 
 void checkOption(options_t *options){
     if (options->input == INPUT_UNKNOWN) {
-        fprintf(stderr, "Pas d'entrée pour la capture spécifiée\n"
-        "Capture sur l'entrée par défaut ! \n"
-        "Voici une liste des différentes interfaces disponibles :\n");
+        fprintf(stderr, "No Entry for the device to use\n"
+        "Here is a list of the different devices to listne to :\n");
         print_all_devs();
+        fprintf("Sniffing on the standard device ! \n")
         options->input = INPUT_DEFAULT;
     }
 
     if (options->inputFilename == NULL && options->input == INPUT_FILE) {
-        fprintf(stderr, "Veuillez saisir le fichier à lire (.pcap)\n");
+        fprintf(stderr, "Please state a file (.pcap)\n");
         exit(1);
     }
 
-    if (options->inputFilename == NULL && options->input == INPUT_FILE) {
-        fprintf(stderr, "Veuillez saisir le fichier à lire (.pcap)\n");
-        exit(1);
-    }
 
     if (options->inputFile == NULL && options->input == INPUT_FILE) {
-        fprintf(stderr, "Echec à l'ouverture du fichier\n");
+        fprintf(stderr, "Unable to open the file\n");
         exit(1);
     }
 
     if (options->verbose == -1) {
-        fprintf(stderr, "Niveau de verbosité par défaut (3)\n");
+        fprintf(stderr, "Standard verbosity (3 - complete)\n");
         options->verbose = 3;
     }
 
     if (options->verbose <= 0 || options->verbose > 3) {
-        fprintf(stderr, "Niveau de verbosité doit être entre 1 et 3 inclus\n");
+        fprintf(stderr, "Verbosity must be between 1 and 3\n");
         exit(1);
     }
 }

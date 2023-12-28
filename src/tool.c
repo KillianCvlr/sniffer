@@ -8,18 +8,22 @@ void print_tree(int prof){
     return;
 }
 
-void print_new_state(int prof){
+void print_new_state(int prof, int verbose){
     if(prof == 0){
         printf("* ");
         return;
     }
-
-    print_tree(prof -1); printf("\n");
-    for(int i = 0; i < prof -1; i++){
-        printf("\t");
+    if(verbose == 1){
+        printf(" | ");
+        return;
+    } else {
+        print_tree(prof -1); printf("\n");
+        for(int i = 0; i < prof -1; i++){
+            printf("\t");
+        }
+        printf("*———————* ");
+        return;
     }
-    printf("*———————* ");
-    return;
 }
 
 void print_mac(uint8_t *mac){
