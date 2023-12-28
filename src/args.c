@@ -6,7 +6,7 @@ void printUsage(void){
     "\t -i <iterface> : Interface à utiliser pour la capture de packet\n"
     "\t -o <fichier> : Fichier à lire pour l'analyse de trames\n"
     "\t -f <filtre> : Filtre à utiliser pendant l'analyse des trames\n"
-    "\t -v <1|2|3> : Verbosité de l'analyse (1 = concis, 2 = synthétique, 3 = bavard)\n"
+    "\t -v <1|2|3> : Verbosité de l'analyse (1 = concis, 2 = synthétique, 3 = complet)\n"
     "\t -n <nb_paquet> : Nombre de paquets à analyser\n");
 }
 
