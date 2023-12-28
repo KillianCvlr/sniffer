@@ -5,7 +5,7 @@ LDLIBS?= -lpcap
 
 INCLUDE_PATH = ./include
 
-TARGET   = analyseur
+TARGET   = sniffer
 
 SRCDIR   = src
 OBJDIR   = obj
@@ -19,6 +19,7 @@ $(BINDIR)/$(TARGET): $(OBJECTS)
 	mkdir -p $(BINDIR)
 	$(CC) -o $@ $^ $(CFLAGS) $(LDLIBS)
 	@echo "Linking complete!"
+	sudo ./bin/sniffer -v 3
 
 $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c
 	mkdir -p $(OBJDIR)

@@ -4,49 +4,36 @@
 #include <stdio.h>
 #include <time.h>
 
-//#include "headers.h"
-//#include "packet_parser.h"
+#include "headers.h"
+#include "packet_parser.h"
+#include "args.h"
 
 
 char errbuf[PCAP_ERRBUF_SIZE];
 
 void print_packet_info(const u_char *packet, struct pcap_pkthdr packet_header){
-    
+    printf("NEW PACKET :\n");
+    printf("Timestamp : %d:%d\n", packet_header.ts.tv_sec, packet_header.ts.tv_usec);
+    return;    
 };
 
-void print_all_devs(){
-    pcap_if_t * interfaces;
+int main(int argc, char **argv[]) {
+
+    //Options de l'utilisateur
+    options_t options;
+    initOption(&options);
+    printf("Options initialisées \n");
+    parseArgs(argc, argv, &options);
+    printf("Parsage finalisé\n");
+    checkOption(&options);
+    printf("Options vérifiées\n");
     
-    // Récupérer la liste des interfaces
-    if (pcap_findalldevs(&interfaces, errbuf) == -1) {
-        fprintf(stderr, "Erreur en récupérant les interfaces: %s\n", errbuf);
-        return;
-    }
-
-    // Parcourir la liste des interfaces
-    pcap_if_t *interface;
-    for (interface = interfaces; interface != NULL; interface = interface->next) {
-        printf("Nom: %s\n", interface->name);
-        if (interface->description)
-            printf("Description: %s\n", interface->description);
-        else
-            printf("Pas de description disponible\n");
-        printf("\n");
-    }
-
-    // Libérer la mémoire allouée par pcap_findalldevs
-    pcap_freealldevs(interfaces);
-}
-
-int main(int argc, char *argv[]) {
     char *device;
     pcap_t *handle;
     const u_char *packet;
     struct pcap_pkthdr packet_header;
     int packet_count_limit = 1;
     int timeout_limit = 10000; /* In milliseconds */
-
-    print_all_devs();
 
     // Find a device
     device = pcap_lookupdev(errbuf);
@@ -69,18 +56,22 @@ int main(int argc, char *argv[]) {
 
      /* Attempt to capture one packet. If there is no network traffic
       and the timeout is reached, it will return NULL */
-     packet = pcap_next(handle, &packet_header);
-     if (packet == NULL) {
+    printf("Capturing Packet... \n\n");
+    packet = pcap_next(handle, &packet_header);
+    if (packet == NULL) {
         printf("No packet found.\n");
         return 2;
     } else {
         printf("Jacked a packet with length of [%d]\n", packet_header.len);
+        /* Our function to output some info */
+        print_packet_info(packet, packet_header);
+        parse_ethernet(packet, options.verbose, 0);
     }
 
-//     /* Our function to output some info */
-//     print_packet_info(packet, packet_header);
+    
 
-    // /* Quitting*/
-    // pcap_close(handle);
+    /* Quitting*/
+    pcap_close(handle);
+    closeOption(&options);
     return 0;
 }

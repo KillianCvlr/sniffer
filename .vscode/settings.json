@@ -11,7 +11,9 @@
         "pcap.h": "c",
         "if_arp.h": "c",
         "stdio.h": "c",
-        "headers.h": "c"
+        "headers.h": "c",
+        "ip6.h": "c",
+        "in.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }
