@@ -6,6 +6,26 @@
 #include <string.h>
 #include <netinet/in.h>
 
+
+/**
+ * @brief Macro pour l'affichage de l'arbre du parsage
+ * (même protocole donc même profondeur)
+ */
+#define PRINT_TREE(prof, args...) do { \
+    print_tree(prof); \
+    printf(args); \
+} while(0)
+
+/**
+ * @brief Macro pour l'affichage de l'arbre du parsage
+ * (nouveau protocole donc nouvelle profondeur)
+ *
+ */
+#define PRINT_NEW_STATE(prof, args...) do { \
+    print_new_state(prof); \
+    printf(args); \
+} while(0)
+
 /**
  * @brief Fonction affichant l'arbre du parsage pour la lisibilité
  * S'occupe de faire les tab et la mise en page

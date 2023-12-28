@@ -7,31 +7,20 @@ void parse_ethernet(const u_char *packet, int verbose, int prof) {
 
     switch(verbose) {
     case 1:
-        print_new_state(prof); printf("ETHERNET \n");
-        break;
-
     case 2:
-        print_new_state(prof);
-        printf("ETHERNET :\n");
-        print_tree(prof);
-        printf("MAC Source : ");
-        print_mac(eth_header->ether_shost); printf("\n");
-        print_tree(prof);
-        printf("MAC Destination : ");
-        print_mac(eth_header->ether_dhost); printf("\n");
-        break;
-
     case 3:
-        print_new_state(prof);
-        printf("ETHERNET :\n");
-        print_tree(prof);
-        printf("MAC Source : ");
+        PRINT_NEW_STATE(prof, "ETHERNET :\n");
+
+        if (verbose == 1) break; // No need to print the MACs
+
+        PRINT_TREE(prof, "MAC Source : ");
         print_mac(eth_header->ether_shost); printf("\n");
-        print_tree(prof);
-        printf("MAC Destination : ");
+        PRINT_TREE(prof, "MAC Destination : ");
         print_mac(eth_header->ether_dhost); printf("\n");
-        print_tree(prof);
-        printf("type : %#2x \n", ntohs(eth_header->ether_type));
+
+        if(verbose == 2) break; // No need to print the type
+
+        PRINT_TREE(prof, "type : %#2x \n", ntohs(eth_header->ether_type));
         break;
     }
 
@@ -58,24 +47,20 @@ void parse_arp(const u_char *packet, uint8_t *ether_dhost, uint8_t *ether_shost,
     struct ether_arp *arp_header = (struct ether_arp *)packet;
     switch (verbose) {
     case 1:
-        print_new_state(prof); printf("ARP \n");
-        break; 
     case 2: 
-        print_new_state(prof); printf("ARP :\n");
-        print_tree(prof); printf("MAC Source : ");
-        print_mac(arp_header->arp_sha);
-        print_tree(prof); printf("MAC Destination : ");
-        print_mac(arp_header->arp_tha);
-
-        break;
     case 3:
-        print_new_state(prof); printf("ARP :\n");
-        print_tree(prof); printf("MAC Source : ");
-        print_mac(arp_header->arp_sha);
-        print_tree(prof); printf("MAC Destination : ");
-        print_mac(arp_header->arp_tha);
+        PRINT_NEW_STATE(prof, "ARP :\n");
 
-        print_tree(prof); printf("Hardware type : %i", ntohs(arp_header->ea_hdr.ar_hrd));
+        if (verbose == 1) break; // No need to print the MACs
+
+        PRINT_TREE(prof, "MAC Source : ");
+        print_mac(arp_header->arp_sha); print("\n");
+        PRINT_TREE(prof, "MAC Destination : ");
+        print_mac(arp_header->arp_tha); print("\n");
+
+        if(verbose == 2) break; // No need to print the rest of the header
+
+        PRINT_TREE(prof, "Hardware type : %i", ntohs(arp_header->ea_hdr.ar_hrd));
         //TAG for the user's lisibility
         switch (ntohs(arp_header->ea_hdr.ar_hrd)) {
         case ARPHRD_ETHER:
@@ -98,7 +83,7 @@ void parse_arp(const u_char *packet, uint8_t *ether_dhost, uint8_t *ether_shost,
             break;
         }
 
-        print_tree(prof); printf("Protocol type : %i", ntohs(arp_header->ea_hdr.ar_pro));
+        PRINT_TREE(prof, "Protocol type : %i", ntohs(arp_header->ea_hdr.ar_pro));
         //TAG for the user's lisibility
         switch (ntohs(arp_header->ea_hdr.ar_pro)) {
         case ETHERTYPE_IP: // 0x0800
@@ -108,20 +93,20 @@ void parse_arp(const u_char *packet, uint8_t *ether_dhost, uint8_t *ether_shost,
             printf(" (IPv6)\n");
             break;
         default:
-            printf("\n");
+            printf("(OTHER THAN IP)\n");
             break;
         }
 
-        print_tree(prof); printf("Hardware size : %i\n", arp_header->ea_hdr.ar_hln);
-        print_tree(prof); printf("Protocol size : %i\n", arp_header->ea_hdr.ar_pln);
-        print_tree(prof); printf("Opcode : %i\n", ntohs(arp_header->ea_hdr.ar_op));
-        print_tree(prof); printf("Sender MAC : ");
-        print_mac(arp_header->arp_sha);
-        print_tree(prof); printf("Sender IP : %i.%i.%i.%i\n", arp_header->arp_spa[0],
-                arp_header->arp_spa[1], arp_header->arp_spa[2], arp_header->arp_spa[3]);
-        print_tree(prof); printf("Target MAC : ");
-        print_mac(arp_header->arp_tha);
-        print_tree(prof); printf("Target IP : %i.%i.%i.%i\n", arp_header->arp_tpa[0],
+        PRINT_TREE(prof, "Hardware size : %i\n", arp_header->ea_hdr.ar_hln);
+        PRINT_TREE(prof, "Protocol size : %i\n", arp_header->ea_hdr.ar_pln);
+        PRINT_TREE(prof, "Opcode : %i\n", ntohs(arp_header->ea_hdr.ar_op));
+        PRINT_TREE(prof, "Sender MAC : ");
+        print_mac(arp_header->arp_sha); print("\n");
+        PRINT_TREE(prof, "Sender IP : %i.%i.%i.%i\n", arp_header->arp_spa[0],
+            arp_header->arp_spa[1], arp_header->arp_spa[2], arp_header->arp_spa[3]);
+        PRINT_TREE(prof, "Target MAC : ");
+        print_mac(arp_header->arp_tha); print("\n");
+        PRINT_TREE(prof, "Target IP : %i.%i.%i.%i\n", arp_header->arp_tpa[0],
                 arp_header->arp_tpa[1], arp_header->arp_tpa[2], arp_header->arp_tpa[3]);
         
         break;
@@ -134,31 +119,28 @@ void parse_ipv4(const u_char *packet, int verbose, int prof) {
 
     switch(verbose) {
     case 1:
-        print_new_state(prof); printf("IPV4 \n");
-        break;
-    case 2:
-        print_new_state(prof); printf("IPV4 :\n");
-        print_tree(prof); printf("@IP source  : %s | ", 
-                                    inet_ntoa(*(struct in_addr *)&ip->ip_src));
-        print_tree(prof); printf("@IP dest  : %s\n", 
-                                    inet_ntoa(*(struct in_addr *)&ip->ip_dst));
-        break;
-    
+    case 2:    
     case 3:
-        print_new_state(prof); printf("IPV4 :\n");
-        print_tree(prof); printf("IP source : %s\n", inet_ntoa(ip->ip_src));
-        print_tree(prof); printf("IP dest : %s\n", inet_ntoa(ip->ip_dst));
-        print_tree(prof); printf("IP version : %i\n", ip->ip_v);
-        print_tree(prof); printf("IP header length : %i (%i bytes)\n", 
+        PRINT_NEW_STATE(prof, "IPV4 :\n");
+
+        if (verbose == 1) break; // No need to print the IP addresses
+
+        PRINT_TREE(prof, "IP source : %s\n", inet_ntoa(ip->ip_src));
+        PRINT_TREE(prof, "IP dest : %s\n", inet_ntoa(ip->ip_dst));
+
+        if (verbose == 2) break; // No need to print the rest of the header
+
+        PRINT_TREE(prof, "IP version : %i\n", ip->ip_v);
+        PRINT_TREE(prof, "IP header length : %i (%i bytes)\n", 
                                     ip->ip_hl, ip->ip_hl * 4);
-        print_tree(prof); printf("Type of Service : %i\n", ip->ip_tos);
-        print_tree(prof); printf("Total length : %u\n", ntohs(ip->ip_len));
-        print_tree(prof); printf("Transaction id : 0x%.2x\n",
+        PRINT_TREE(prof, "Type of Service : %i\n", ip->ip_tos);
+        PRINT_TREE(prof, "Total length : %u\n", ntohs(ip->ip_len));
+        PRINT_TREE(prof, "Transaction id : 0x%.2x\n",
                                     ntohs(ip->ip_id));
-        print_tree(prof); printf("Fragment offset field : 0x%.2x\n", 
+        PRINT_TREE(prof, "Fragment offset field : 0x%.2x\n", 
                                     ntohs(ip->ip_off));
-        print_tree(prof); printf("Checksum : 0x%x\n", ntohs(ip->ip_sum));
-        print_tree(prof); printf("Time to live : %i\n", ip->ip_ttl);
+        PRINT_TREE(prof, "Checksum : 0x%x\n", ntohs(ip->ip_sum));
+        PRINT_TREE(prof, "Time to live : %i\n", ip->ip_ttl);
         break;
     }
 
@@ -171,7 +153,7 @@ void parse_ipv4(const u_char *packet, int verbose, int prof) {
         parse_tcp(packet + (ip->ip_hl * 4), verbose, prof +1, size);
         break;
     case 0x01:
-        print_new_state(prof); printf("ICMP \n");
+        PRINT_NEW_STATE(prof, "ICMP \n");
         break;
     }
 }
@@ -180,30 +162,26 @@ void parse_ipv6(const u_char *packet, int verbose, int prof) {
     struct ip6_hdr *ip = (struct ip6_hdr *)(packet);
     switch (verbose) {
     case 1:
-        print_new_state(prof); printf("IPV6 \n");
-        break;
     case 2:
-        print_new_state(prof); printf("IPV6 :\n");
-        print_tree(prof); printf("IP source  : ");
-        print_ipv6(ip->ip6_src);
-        
-        print_tree(prof); printf("IP dest  : ");
-        print_ipv6(ip->ip6_src);
-        break;
     case 3:
-        print_new_state(prof); printf("IPV6 :\n");
-        print_tree(prof); printf("IP source  : ");
+        PRINT_NEW_STATE(prof, "IPV6 :\n");
+
+        if (verbose == 1) break; // No need to print the IP addresses
+
+        PRINT_TREE(prof, "IP source  : ");
         print_ipv6(ip->ip6_src); printf("\n");
         
-        print_tree(prof); printf("IP dest  : ");
+        PRINT_TREE(prof, "IP dest  : ");
         print_ipv6(ip->ip6_src); printf("\n");
         
-        print_tree(prof); printf("Flow : %.2x\n", ip->ip6_flow >> 8);
-        print_tree(prof); printf("Payload Length : %u\n", ntohs(ip->ip6_plen));
-        print_tree(prof); printf("Next header : 0x%x\n", ip->ip6_nxt);
-        print_tree(prof); printf("Hop limit : %u\n", ip->ip6_hlim);
-        print_tree(prof); printf("Version : %u\n", ip->ip6_vfc >> 4);
-        print_tree(prof); printf("Traffic class : 0x%.2x\n", ip->ip6_flow >> 8);
+        if (verbose == 2) break; // No need to print the rest of the header
+
+        PRINT_TREE(prof, "Flow : %.2x\n", ip->ip6_flow >> 8);
+        PRINT_TREE(prof, "Payload Length : %u\n", ntohs(ip->ip6_plen));
+        PRINT_TREE(prof, "Next header : 0x%x\n", ip->ip6_nxt);
+        PRINT_TREE(prof, "Hop limit : %u\n", ip->ip6_hlim);
+        PRINT_TREE(prof, "Version : %u\n", ip->ip6_vfc >> 4);
+        PRINT_TREE(prof, "Traffic class : 0x%.2x\n", ip->ip6_flow >> 8);
         break;
     }
     int size = ntohs(ip->ip6_plen);
@@ -215,7 +193,7 @@ void parse_ipv6(const u_char *packet, int verbose, int prof) {
         parse_tcp(packet + sizeof(struct ip6_hdr), verbose, prof +1, size);
         break;
     case 0x3a:
-        print_new_state(prof); printf("ICMPv6\n");
+        PRINT_NEW_STATE(prof, "ICMPv6\n");
         break;
     }
 }
@@ -224,19 +202,19 @@ void parse_udp(const u_char *packet, int verbose, int prof, int size) {
     struct udphdr *udp = (struct udphdr *)(packet);
     switch (verbose) {
     case 1:
-        print_new_state(prof); printf("UDP \n");
-        break;
     case 2:
-        print_new_state(prof); printf("UDP :\n");
-        print_tree(prof); printf("Port Source -> Destination : %d -> %d\n", 
-                ntohs(udp->uh_sport), ntohs(udp->uh_dport));
-        break;
     case 3:
-        print_new_state(prof); printf("UDP :\n");
-        print_tree(prof); printf("Port Source: %d\n", ntohs(udp->uh_sport));
-        print_tree(prof); printf("Port Destination: %d\n", ntohs(udp->uh_dport));
-        print_tree(prof); printf("Length : %i\n", ntohs(udp->uh_ulen));
-        print_tree(prof); printf("Checksum : 0x%x\n", ntohs(udp->uh_sum));
+        PRINT_NEW_STATE(prof, "UDP :\n");
+
+        if (verbose == 1) break; // No need to print the ports
+
+        PRINT_TREE(prof, "Port Source: %d\n", ntohs(udp->uh_sport));
+        PRINT_TREE(prof, "Port Destination: %d\n", ntohs(udp->uh_dport));
+
+        if (verbose == 2) break; // No need to print the rest of the header
+
+        PRINT_TREE(prof, "Length : %i\n", ntohs(udp->uh_ulen));
+        PRINT_TREE(prof, "Checksum : 0x%x\n", ntohs(udp->uh_sum));
         break;
     }
 
@@ -258,23 +236,23 @@ void parse_tcp(const u_char *packet, int verbose, int prof, int size){
     struct tcphdr *tcp = (struct tcphdr *)(packet);
     switch (verbose) {
     case 1:
-        print_new_state(prof); printf("TCP \n");
-        break;
     case 2:
-        print_new_state(prof); printf("TCP :\n");
-        print_tree(prof); printf("Port Source -> Destination : %d -> %d\n", ntohs(tcp->th_sport),
-               ntohs(tcp->th_dport));
-        break;
     case 3:
-        print_new_state(prof); printf("TCP :\n");
-        print_tree(prof); printf("Port Source: %d\n", ntohs(tcp->th_sport));
-        print_tree(prof); printf("Port Destination: %d\n", ntohs(tcp->th_dport));
-        print_tree(prof); printf("Sequence number : 0x%.2x (%u)\n", tcp->th_seq,
+        PRINT_NEW_STATE(prof, "TCP :\n");
+
+        if (verbose == 1) break; // No need to print the ports
+
+        PRINT_TREE(prof, "Port Source: %d\n", ntohs(tcp->th_sport));
+        PRINT_TREE(prof, "Port Destination: %d\n", ntohs(tcp->th_dport));
+
+        if (verbose == 2) break; // No need to print the rest of the header
+
+        PRINT_TREE(prof, "Sequence number : 0x%.2x (%u)\n", tcp->th_seq,
                ntohl(tcp->th_seq));
-        print_tree(prof); printf("Acknowledgement number : 0x%.2x (%u)\n", tcp->th_ack,
+        PRINT_TREE(prof, "Acknowledgement number : 0x%.2x (%u)\n", tcp->th_ack,
                ntohl(tcp->th_ack));
-        print_tree(prof);printf("Data offset : %i\n", tcp->th_off);
-        print_tree(prof);printf("Flags : 0x%.2x ", tcp->th_flags); 
+        PRINT_TREE(prof, "Data offset : %i (%i bytes)\n", tcp->th_off, tcp->th_off * 4);
+        PRINT_TREE(prof, "Flags : 0x%.2x", tcp->th_flags);
         //TAGS for the user's lisibility
         if (tcp->th_flags & TH_FIN) printf("FIN ");
         if (tcp->th_flags & TH_SYN) printf("SYN ");
@@ -284,9 +262,9 @@ void parse_tcp(const u_char *packet, int verbose, int prof, int size){
         if (tcp->th_flags & TH_URG) printf("URG ");
         printf("\n");
 
-        print_tree(prof); printf("Window : %u\n", ntohs(tcp->th_win));
-        print_tree(prof); printf("Checksum : 0x%x\n", ntohs(tcp->th_sum));
-        print_tree(prof); printf("Urgent Pointer : %.2x\n", tcp->th_urp);
+        PRINT_TREE(prof, "Window : %u\n", ntohs(tcp->th_win));
+        PRINT_TREE(prof, "Checksum : 0x%x\n", ntohs(tcp->th_sum));
+        PRINT_TREE(prof, "Urgent Pointer : %.2x\n", tcp->th_urp);
         break;
     }
     // Rest of the packet (protocol under TCP)
@@ -308,18 +286,18 @@ void parse_icmp(const u_char *packet, int verbose, int prof) {
     struct icmp *icmp = (struct icmp *)(packet);
     switch (verbose) {
     case 1:
-        print_new_state(prof); printf("ICMP \n");
-        break;
     case 2:
-        print_new_state(prof); printf("ICMP :\n");
-        print_tree(prof); printf("Type : %i\n", icmp->icmp_type);
-        print_tree(prof); printf("Code : %i\n", icmp->icmp_code);
-        break;
     case 3:
-        print_new_state(prof); printf("ICMP :\n");
-        print_tree(prof); printf("Type : %i\n", icmp->icmp_type);
-        print_tree(prof); printf("Code : %i\n", icmp->icmp_code);
-        print_tree(prof); printf("Checksum : 0x%x\n", ntohs(icmp->icmp_cksum));
+        PRINT_NEW_STATE(prof, "ICMP :\n");
+
+        if (verbose == 1) break; // No need to print the rest of the header
+
+        PRINT_TREE(prof, "Type : %i\n", icmp->icmp_type);
+
+        if (verbose == 2) break; // No need to print the rest of the header
+        
+        PRINT_TREE(prof, "Code : %i\n", icmp->icmp_code);
+        PRINT_TREE(prof, "Checksum : 0x%x\n", ntohs(icmp->icmp_cksum));
         break;
     }
 }
