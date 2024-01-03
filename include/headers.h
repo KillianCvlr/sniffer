@@ -17,45 +17,7 @@
 
 /*	Used Headers ********************************************************/
 
-// Structure of the BOOTP header
-struct bootp_header {
-    uint8_t op;          // Operation type (1 for request, 2 for reply)
-    uint8_t htype;       // Hardware type (1 for Ethernet)
-    uint8_t hlen;        // Hardware address length (6 for Ethernet MAC address)
-    uint8_t hops;        // Number of intermediate relays
-    uint32_t xid;        // Exchange identifier
-    uint16_t secs;       // Time since the start of the operation
-    uint16_t flags;      // Special flags
-    uint8_t ciaddr[4];   // Client IP address
-    uint8_t yiaddr[4];   // Assigned IP address
-    uint8_t siaddr[4];   // IP address of the boot server
-    uint8_t giaddr[4];   // IP address of the relay agent
-    uint8_t chaddr[16];  // Client hardware address (MAC)
-    uint8_t sname[64];   // Boot server name
-    uint8_t file[128];   // Boot file name
-    uint32_t magic;      // Magic signature (0x63825363)
-    uint8_t options[64]; // BOOTP/DHCP specific options
-};
-
-// Structure of the DHCP header
-struct dhcp_header {
-    uint8_t op;          // Operation type (1 for request, 2 for reply)
-    uint8_t htype;       // Hardware type (1 for Ethernet)
-    uint8_t hlen;        // Hardware address length (6 for Ethernet MAC address)
-    uint8_t hops;        // Number of intermediate relays
-    uint32_t xid;        // Exchange identifier
-    uint16_t secs;       // Time since the start of the operation
-    uint16_t flags;      // Special flags
-    uint8_t ciaddr[4];   // Client IP address
-    uint8_t yiaddr[4];   // Assigned IP address
-    uint8_t siaddr[4];   // IP address of the boot server
-    uint8_t giaddr[4];   // IP address of the relay agent
-    uint8_t chaddr[16];  // Client hardware address (MAC)
-    uint8_t sname[64];   // Boot server name
-    uint8_t file[128];   // Boot file name
-    uint32_t magic;      // Magic signature (0x63825363)
-    uint8_t options[64]; // BOOTP/DHCP specific options
-};
+#include "bootp.h"
 
 // Structure of the DNS header
 struct dns_header {
@@ -66,6 +28,17 @@ struct dns_header {
     uint16_t nscount;     // Number of entries in the Authority section
     uint16_t arcount;
 };
+
+//DNS FLAGS
+#define DNS_QR 0x8000
+#define DNS_OPCODE 0x7800
+#define DNS_AA 0x0400
+#define DNS_TC 0x0200
+#define DNS_RD 0x0100
+#define DNS_RA 0x0080
+#define DNS_Z 0x0070
+#define DNS_RCODE 0x000F
+
 
 // Structure of the HTTP header
 struct http_header {

@@ -52,4 +52,15 @@ void print_mac(uint8_t *mac);
  */
 void print_ipv6(struct in6_addr);
 
+/**
+ * @brief Function printing an IPv4 address
+ *
+ */
+void print_ip(struct in_addr);
+
+/**
+* @brief Function printing an ip address from a uint8_t array
+*/
+void print_ip_from_uint8(uint8_t *ip);
+
 #endif

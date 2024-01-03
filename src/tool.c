@@ -48,3 +48,21 @@ void print_ipv6(struct in6_addr addr){
     addr.s6_addr[7]);
     return;
 }
+
+void print_ip(struct in_addr addr){
+    printf("%d.%d.%d.%d", 
+    addr.s_addr & 0xFF, 
+    (addr.s_addr >> 8) & 0xFF, 
+    (addr.s_addr >> 16) & 0xFF, 
+    (addr.s_addr >> 24) & 0xFF);
+    return;
+}
+
+void print_ip_from_uint8(uint8_t *addr){
+    printf("%d.%d.%d.%d", 
+    addr[0], 
+    addr[1], 
+    addr[2], 
+    addr[3]);
+    return;
+}
