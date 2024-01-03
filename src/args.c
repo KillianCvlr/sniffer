@@ -110,7 +110,7 @@ void checkOption(options_t *options){
         fprintf(stderr, "No Entry for the device to use\n"
         "Here is a list of the different devices to listne to :\n");
         print_all_devs();
-        fprintf("Sniffing on the standard device ! \n")
+        fprintf(stderr, "Sniffing on the standard device ! \n");
         options->input = INPUT_DEFAULT;
     }
 

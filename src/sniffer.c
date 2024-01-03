@@ -11,9 +11,12 @@
 
 char errbuf[PCAP_ERRBUF_SIZE];
 
+void got_packet(u_char *args, const struct pcap_pkthdr *header,
+                const u_char *packet);
+
 void print_packet_info(const u_char *packet, struct pcap_pkthdr packet_header){
-    printf("NEW PACKET :\n");
-    printf("Timestamp : %d:%d\n", packet_header.ts.tv_sec, packet_header.ts.tv_usec);
+    printf("\nNEW PACKET :\n");
+    printf("Timestamp : %ld:%ld\n", packet_header.ts.tv_sec, packet_header.ts.tv_usec);
     return;    
 };
 
@@ -36,41 +39,69 @@ int main(int argc, char **argv[]) {
     int packet_count_limit = 1;
     int timeout_limit = 10000; /* In milliseconds */
 
-    // Find a device
-    device = pcap_lookupdev(errbuf);
-    if (device == NULL) {
-        printf("Error finding device: %s\n", errbuf);
-        return 1;
+    //Setup of the interface
+    if (options.input == INPUT_DEFAULT) {
+       char errbuf[PCAP_ERRBUF_SIZE];
+
+        device = pcap_lookupdev(errbuf);
+        if (device == NULL) {
+            printf("Error finding device: %s\n", errbuf);
+            return 1;
+        }
+
+        // Afficher le nom de l'interface par défaut
+        printf("Listening on standard device : %s\n", device);
+        handle = pcap_open_live(device, BUFSIZ, packet_count_limit, timeout_limit, errbuf);
+        if (handle == NULL) {
+            printf("%s\n", errbuf);
+            return 1;
+        }
+
+    } else if (options.input == INPUT_FILE) {
+        char errbuf[PCAP_ERRBUF_SIZE];
+        handle = pcap_open_offline(options.inputFilename, errbuf);
+        if (handle == NULL) {
+            printf("%s\n", errbuf);
+            return 1;
+        }
+        printf("Listening on file : %s\n", options.inputFilename);
+
+    } else if (options.input == INPUT_DEVICE) {
+
+        char errbuf[PCAP_ERRBUF_SIZE];
+        handle = pcap_open_live(options.device, BUFSIZ, packet_count_limit, timeout_limit, errbuf);
+        if (handle == NULL) {
+            printf("%s\n", errbuf);
+            return 1;
+        }
+        printf("Listening on device : %s\n", options.device);
     }
-
-    // Afficher le nom de l'interface par défaut
-    printf("Listening on standard device : %s\n", device);
-
-    /* Open device for live capture */
-    handle = pcap_open_live(
-            device,
-            BUFSIZ,
-            packet_count_limit,
-            timeout_limit,
-            errbuf
-        );
-
-     /* Attempt to capture one packet. If there is no network traffic
-      and the timeout is reached, it will return NULL */
+    if (options.filter == 1) {
+        struct bpf_program fp;
+        if (pcap_compile(handle, &fp, options.bpf, 0, 0) == -1) {
+            printf("pcap_compile error\n");
+        }
+        if (pcap_setfilter(handle, &fp) == -1) {
+            printf("pcap_setfilter error\n");
+        }
+        printf("Listening with filter : %s\n", options.bpf);
+    }
     printf("Capturing Packet... \n\n");
-    packet = pcap_next(handle, &packet_header);
-    if (packet == NULL) {
-        printf("No packet found.\n");
-        return 2;
-    } else {
-        printf("Jacked a packet with length of [%d]\n", packet_header.len);
-        /* Our function to output some info */
-        print_packet_info(packet, packet_header);
-        parse_ethernet(packet, options.verbose, 0);
-    }
+    pcap_loop(handle, options.nb_packet, got_packet, (u_char *)&options.verbose);
 
     /* Quitting*/
     pcap_close(handle);
     closeOption(&options);
     return 0;
+}
+
+void got_packet(u_char *args, const struct pcap_pkthdr *header,
+                const u_char *packet) {
+
+    int verbose = args[0];
+
+    if (verbose >= 2) print_packet_info(packet, *header);
+
+    parse_ethernet((char *)packet, verbose, 0);
+    printf("\n");
 }

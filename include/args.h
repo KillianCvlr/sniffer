@@ -14,48 +14,74 @@
 
 extern char errbuf[PCAP_ERRBUF_SIZE];
 
-typedef enum {
+typedef enum input_t {
     INPUT_UNKNOWN,
     INPUT_LIVE,
     INPUT_FILE,
     INPUT_DEVICE,
     INPUT_DEFAULT,
-} input_type;
+} input_t;
 
 /**
- * @brief Displays available options for the user
+ * @brief Structure stockant les différentes options données en entrée par
+ * l'utilisateur
  *
  */
-void showUsage(void);
+
+typedef struct options_t {
+    input_t input;
+    int verbose;
+    uint64_t filter;
+    char *bpf;
+    char *inputFilename;
+    FILE *inputFile;
+    char *device;
+    char *protocol;
+    int nb_packet;
+} options_t;
 
 /**
- * @brief Initializes the Options structure to store user input
+ * @brief Affichage des otpions disponbles pour l'utilisateur
  *
  */
-void initializeOptions(options_t *options);
+
+void printUsage(void);
 
 /**
- * @brief Parses the arguments
+ * @brief Initialisation de la structure Options qui sauvegarde les 
+ * arguments de l'utilisateur
  *
  */
-void parseArguments(int argc, char **argv, options_t *options);
+
+void initOption(options_t *options);
 
 /**
- * @brief Displays all computer interfaces
+ * @brief Parsage des arguments
  *
  */
-void displayAllDevices();
+
+void parseArgs(int argc, char **argv, options_t *options);
 
 /**
- * @brief Verifies the arguments in the options
+ * @brief Affichage de toutes les interfaces de l'ordinateur
  *
  */
-void validateOptions(options_t *options);
+
+void print_all_devs();
 
 /**
- * @brief Closes files in the Options structure
+ * @brief Vérification des arguments dans option
  *
  */
-void closeOptions(options_t *options);
+
+void checkOption(options_t *options);
+
+
+/**
+ * @brief Fermeture des fichiers dans Options
+ *
+ */
+
+void closeOption(options_t *options);
 
 #endif
