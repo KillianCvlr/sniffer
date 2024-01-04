@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <netinet/in.h>
+#include <ctype.h>
 
 /**
  * @brief Macro for printing the parsing tree

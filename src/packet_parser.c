@@ -1,6 +1,5 @@
-#include <stdio.h>
 #include "packet_parser.h"
-#include "tool.h"
+
 
 void parse_ethernet(const u_char *packet, int verbose, int prof) {
     struct ether_header *eth_header = (struct ether_header *)packet;
@@ -218,15 +217,27 @@ void parse_udp(const u_char *packet, int verbose, int prof, int size) {
     }
 
     // Rest of the packet (protocol under UDP)
-    switch (ntohs(udp->uh_dport)) {
+    switch (ntohs(udp->uh_sport)) {
     case 0x43:
-        parse_bootp(packet + sizeof(struct udphdr), verbose, prof +1);
-        break;
     case 0x44:
         parse_bootp(packet + sizeof(struct udphdr), verbose, prof +1);
         break;
     case 0x35:
         parse_dns(packet + sizeof(struct udphdr), verbose, prof +1);
+        break;
+    default:
+        switch (ntohs(udp->uh_dport)) {
+        case 0x43:
+        case 0x44:
+            parse_bootp(packet + sizeof(struct udphdr), verbose, prof +1);
+            break;
+        case 0x35:
+            parse_dns(packet + sizeof(struct udphdr), verbose, prof +1);
+            break;
+        default:
+            PRINT_NEW_STATE(prof, verbose, "DATA");
+            break;
+        }
         break;
     }
 }
@@ -238,20 +249,21 @@ void parse_tcp(const u_char *packet, int verbose, int prof, int size){
     case 2:
     case 3:
         PRINT_NEW_STATE(prof, verbose, "TCP");
+            if(verbose == 1){
+            if (tcp->th_flags & TH_FIN) printf("FIN ");
+            if (tcp->th_flags & TH_SYN) printf("SYN ");
+            if (tcp->th_flags & TH_RST) printf("RST ");
+            if (tcp->th_flags & TH_PUSH) printf("PUSH ");
+            if (tcp->th_flags & TH_ACK) printf("ACK ");
+            if (tcp->th_flags & TH_URG) printf("URG ");
+            printf("\n");
+        }
 
        if(verbose == 1) break ; // No need to print the ports
 
         PRINT_TREE(prof, "Port Source: %d\n", ntohs(tcp->th_sport));
         PRINT_TREE(prof, "Port Destination: %d\n", ntohs(tcp->th_dport));
-
-       if(verbose == 2) break ; // No need to print the rest of the header
-
-        PRINT_TREE(prof, "Sequence number : 0x%.2x (%u)\n", tcp->th_seq,
-               ntohl(tcp->th_seq));
-        PRINT_TREE(prof, "Acknowledgement number : 0x%.2x (%u)\n", tcp->th_ack,
-               ntohl(tcp->th_ack));
-        PRINT_TREE(prof, "Data offset : %i (%i bytes)\n", tcp->th_off, tcp->th_off * 4);
-        PRINT_TREE(prof, "Flags : 0x%.2x", tcp->th_flags);
+        PRINT_TREE(prof, "Flags : 0x%.2x ", tcp->th_flags);
 
         //TAGS for the user's lisibility
         if (tcp->th_flags & TH_FIN) printf("FIN ");
@@ -262,24 +274,50 @@ void parse_tcp(const u_char *packet, int verbose, int prof, int size){
         if (tcp->th_flags & TH_URG) printf("URG ");
         printf("\n");
 
+       if(verbose == 2) break ; // No need to print the rest of the header
+
+        PRINT_TREE(prof, "Sequence number : 0x%.2x (%u)\n", tcp->th_seq,
+               ntohl(tcp->th_seq));
+        PRINT_TREE(prof, "Acknowledgement number : 0x%.2x (%u)\n", tcp->th_ack,
+               ntohl(tcp->th_ack));
+        PRINT_TREE(prof, "Data offset : %i (%i bytes)\n", tcp->th_off, tcp->th_off * 4);
+        
+
         PRINT_TREE(prof, "Window : %u\n", ntohs(tcp->th_win));
         PRINT_TREE(prof, "Checksum : 0x%x\n", ntohs(tcp->th_sum));
         PRINT_TREE(prof, "Urgent Pointer : %.2x\n", tcp->th_urp);
         break;
     }
-    // Rest of the packet (protocol under TCP)
-    switch (ntohs(tcp->th_dport)) {
-    case 0x50:
-        parse_http(packet + sizeof(struct tcphdr), verbose, prof +1);
-        break;
-    case 0x15:  
-        parse_ftp(packet + sizeof(struct tcphdr), verbose, prof +1);
-        break;
-    case 0x19:
-        parse_smtp(packet + sizeof(struct tcphdr), verbose, prof +1);
-        break;
-    }
+    // check if only used in order to flag the TCP protocol
+    if(size != sizeof(struct tcphdr)) {
+        // Rest of the packet (protocol under TCP)
+        switch (ntohs(tcp->th_sport)) {
+        case 0x50:
+            parse_http(packet + sizeof(struct tcphdr), verbose, prof +1, size - sizeof(struct tcphdr) );
+            break;
+        case 0x15:  
+            parse_ftp(packet + sizeof(struct tcphdr), verbose, prof +1);
+            break;
+        case 0x19:
+            parse_smtp(packet + sizeof(struct tcphdr), verbose, prof +1);
+            break;
 
+        default:
+            switch (ntohs(tcp->th_dport)) {
+            case 0x50:
+                parse_http(packet + sizeof(struct tcphdr), verbose, prof +1, size - sizeof(struct tcphdr) );
+                break;
+            case 0x15:  
+                parse_ftp(packet + sizeof(struct tcphdr), verbose, prof +1);
+                break;
+            case 0x19:
+                parse_smtp(packet + sizeof(struct tcphdr), verbose, prof +1);
+                break;
+            default :
+                PRINT_NEW_STATE(prof +1, verbose, "DATA");
+            }
+        }
+    }
 }
 
 void parse_icmp(const u_char *packet, int verbose, int prof) {
@@ -302,10 +340,10 @@ void parse_icmp(const u_char *packet, int verbose, int prof) {
         case ICMP_ECHOREPLY:
             printf(" (Echo Reply)\n");
             break;
-        case ICMP_UNREACH:
+        case ICMP_DEST_UNREACH:
             printf(" (Destination Unreachable)\n");
             break;
-        case ICMP_SOURCEQUENCH:
+        case ICMP_SOURCE_QUENCH:
             printf(" (Source Quench)\n");
             break;
         case ICMP_REDIRECT:
@@ -314,10 +352,10 @@ void parse_icmp(const u_char *packet, int verbose, int prof) {
         case ICMP_ECHO:
             printf(" (Echo Request)\n");
             break;
-        case ICMP_TIMXCEED:
+        case ICMP_TIME_EXCEEDED:
             printf(" (Time Exceeded)\n");
             break;
-        case ICMP_PARAMPROB:
+        case ICMP_PARAMETERPROB:
             printf(" (Parameter Problem)\n");
             break;  
 
@@ -635,7 +673,7 @@ void parse_dns(const u_char *packet, int verbose, int prof) {
        if(verbose == 1) break ; // No need to print the rest of the header
 
         PRINT_TREE(prof, "Transaction ID : 0x%.2x\n", ntohs(dns_header->id));
-        PRINT_TREE(prof, "Flags : 0x%.2x", ntohs(dns_header->flags));
+        PRINT_TREE(prof, "Flags : 0x%.2x ", ntohs(dns_header->flags));
         //TAG for the user's lisibility
         if (ntohs(dns_header->flags) & DNS_QR) printf("QR ");
         if (ntohs(dns_header->flags) & DNS_OPCODE) printf("OPCODE ");
@@ -657,45 +695,93 @@ void parse_dns(const u_char *packet, int verbose, int prof) {
     }
 }
 
-void parse_http(const u_char *packet, int verbose, int prof) {
+void parse_http(const u_char *packet, int verbose, int prof, int size) {
     struct http_header *http_header = (struct http_header *)(packet + sizeof(struct ether_header) + sizeof(struct iphdr) + sizeof(struct tcphdr));
     switch (verbose) {
     case 1:
     case 2:
     case 3:
-        PRINT_NEW_STATE(prof, verbose, "HTTP");
-
-        if(verbose >= 2) PRINT_TREE(prof, "Method : %s", http_header->method);
-        //TAG for the user's lisibility
-        if (strcmp(http_header->method, "GET") == 0) printf(" (GET)\n");
-        else if (strcmp(http_header->method, "POST") == 0) printf(" (POST)\n");
-        else if (strcmp(http_header->method, "HEAD") == 0) printf(" (HEAD)\n");
-        else if (strcmp(http_header->method, "PUT") == 0) printf(" (PUT)\n");
-        else if (strcmp(http_header->method, "DELETE") == 0) printf(" (DELETE)\n");
-        else if (strcmp(http_header->method, "CONNECT") == 0) printf(" (CONNECT)\n");
-        else if (strcmp(http_header->method, "OPTIONS") == 0) printf(" (OPTIONS)\n");
-        else if (strcmp(http_header->method, "TRACE") == 0) printf(" (TRACE)\n");
-        else if (strcmp(http_header->method, "PATCH") == 0) printf(" (PATCH)\n");
-        else printf(" (Unknown)\n");
+        (char*) packet;
+            
+        if (strstr(packet, "GET") != NULL) {
+            PRINT_NEW_STATE(prof, verbose, "HTTP (GET)");
+        } else if (strstr(packet, "HEAD") != NULL) {
+            PRINT_NEW_STATE(prof, verbose, "HTTP (HEAD)");
+        } else if (strstr(packet, "POST") != NULL) {
+            PRINT_NEW_STATE(prof, verbose, "HTTP (POST)");
+        } else if (strstr(packet, "PUT") != NULL) {
+            PRINT_NEW_STATE(prof, verbose, "HTTP (PUT)");
+        } else if (strstr(packet, "DELETE") != NULL) {
+            PRINT_NEW_STATE(prof, verbose, "HTTP (DELETE)");
+        } else if (strstr(packet, "CONNECT") != NULL) {
+            PRINT_NEW_STATE(prof, verbose, "HTTP (CONNECT)");
+        } else if (strstr(packet, "OPTIONS") != NULL) {
+            PRINT_NEW_STATE(prof, verbose, "HTTP (OPTIONS)");
+        } else if (strstr(packet, "TRACE") != NULL) {
+            PRINT_NEW_STATE(prof, verbose, "HTTP (TRACE)");
+        } else if (strstr(packet, "PATCH") != NULL) {
+            PRINT_NEW_STATE(prof, verbose, "HTTP (PATCH)");
+        } else if (strstr(packet, "OK") != NULL){
+            PRINT_NEW_STATE(prof, verbose, "HTTP (OK)");
+        } else {
+            PRINT_NEW_STATE(prof, verbose, "HTTP ()");
+        }
 
         if(verbose == 1) break ; // No need to print the rest of the header
 
-        PRINT_TREE(prof, "URI : %s\n", http_header->uri);
-        PRINT_TREE(prof, "Version : %s\n", http_header->version);
-
         if(verbose == 2) break ; // No need to print the rest of the header
 
-        PRINT_TREE(prof, "Status code : %i\n", http_header->status_code);
-        PRINT_TREE(prof, "Reason phrase : %s\n", http_header->reason_phrase);
-        PRINT_TREE(prof, "Headers : %s\n", http_header->headers);
-        PRINT_TREE(prof, "Body : %s\n", http_header->body);
+        if(size != 0){
+            for(int i = 0; i <= size; i++){
+                if(isprint(packet[i])){
+                    printf("%c", packet[i]);
+                } else {
+                    printf(".");
+                }
+            }
+        }
         break;
     }
 }
 
+void print_http_option(char *packet) {
+    
+}
+
 void parse_ftp(const u_char *packet, int verbose, int prof) {
     struct ftp_header *ftp_header = (struct ftp_header *)(packet + sizeof(struct ether_header) + sizeof(struct iphdr) + sizeof(struct tcphdr));
-    // Traitement de l'en-tete FTP ici
+    switch (verbose) {
+    case 1:
+    case 2:
+    case 3:
+        PRINT_NEW_STATE(prof, verbose, "FTP");
+
+        if(verbose >= 2) PRINT_TREE(prof, "Command : %s", ftp_header->command);
+        //TAG for the user's lisibility
+        if (strcmp(ftp_header->command, "USER") == 0) printf(" (USER)\n");
+        else if (strcmp(ftp_header->command, "PASS") == 0) printf(" (PASS)\n");
+        else if (strcmp(ftp_header->command, "LIST") == 0) printf(" (LIST)\n");
+        else if (strcmp(ftp_header->command, "RETR") == 0) printf(" (RETR)\n");
+        else if (strcmp(ftp_header->command, "STOR") == 0) printf(" (STOR)\n");
+        else if (strcmp(ftp_header->command, "QUIT") == 0) printf(" (QUIT)\n");
+        else if (strcmp(ftp_header->command, "SYST") == 0) printf(" (SYST)\n");
+        else if (strcmp(ftp_header->command, "TYPE") == 0) printf(" (TYPE)\n");
+        else if (strcmp(ftp_header->command, "PORT") == 0) printf(" (PORT)\n");
+        else if (strcmp(ftp_header->command, "PASV") == 0) printf(" (PASV)\n");
+        else if (strcmp(ftp_header->command, "MKD") == 0) printf(" (MKD)\n");
+        else if (strcmp(ftp_header->command, "CWD") == 0) printf(" (CWD)\n");
+        else if (strcmp(ftp_header->command, "PWD") == 0) printf(" (PWD)\n");
+        else if (strcmp(ftp_header->command, "RMD") == 0) printf(" (RMD)\n");
+        else if (strcmp(ftp_header->command, "DELE") == 0) printf(" (DELE)\n");
+        else if (strcmp(ftp_header->command, "RNFR") == 0) printf(" (RNFR)\n");
+        else if (strcmp(ftp_header->command, "RNTO") == 0) printf(" (RNTO)\n");
+        else printf(" (Unknown)\n");
+
+        if(verbose == 1) break ; // No need to print the rest of the header
+
+        PRINT_TREE(prof, "Argument : %s\n", ftp_header->argument);
+    }
+
 }
 
 void parse_smtp(const u_char *packet, int verbose, int prof) {

@@ -20,7 +20,7 @@ void print_packet_info(const u_char *packet, struct pcap_pkthdr packet_header){
     return;    
 };
 
-int main(int argc, char **argv[]) {
+int main(int argc, char *argv[]) {
 
     //Options de l'utilisateur
     options_t options;
@@ -86,7 +86,7 @@ int main(int argc, char **argv[]) {
         }
         printf("Listening with filter : %s\n", options.bpf);
     }
-    printf("Capturing Packet... \n\n");
+    printf("Capturing Packets... \n\n");
     pcap_loop(handle, options.nb_packet, got_packet, (u_char *)&options.verbose);
 
     /* Quitting*/
@@ -97,11 +97,13 @@ int main(int argc, char **argv[]) {
 
 void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 const u_char *packet) {
-
+    static int packet_id = 1;
     int verbose = args[0];
 
     if (verbose >= 2) print_packet_info(packet, *header);
 
+    printf("%d ", packet_id);
     parse_ethernet((char *)packet, verbose, 0);
     printf("\n");
+    packet_id++;
 }
