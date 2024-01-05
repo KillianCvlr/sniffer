@@ -8,6 +8,25 @@ void print_tree(int prof){
     return;
 }
 
+void print_content(int prof, int verbose, int size, char* buff){
+    if(verbose == 1) return;
+    if(size != 0){
+        print_tree(prof);
+        for(int i = 0; i < size; i++){
+            if(isprint(buff[i])){
+                printf("%c", buff[i]);
+            } else {
+                if(buff[i] == '\n' && i != size -1){
+                    printf("\n");
+                    print_tree(prof);
+                } else {
+                    printf("·");
+                }
+            }
+        }
+    }
+}
+
 void print_new_state(int prof, int verbose){
     if(prof == 0){
         printf("* ");
@@ -17,7 +36,6 @@ void print_new_state(int prof, int verbose){
         printf(" | ");
         return;
     } else {
-        print_tree(prof -1); printf("\n");
         for(int i = 0; i < prof -1; i++){
             printf("\t");
         }

@@ -119,7 +119,6 @@ void checkOption(options_t *options){
         exit(1);
     }
 
-
     if (options->inputFile == NULL && options->input == INPUT_FILE) {
         fprintf(stderr, "Unable to open the file\n");
         exit(1);

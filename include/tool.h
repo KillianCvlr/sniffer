@@ -6,7 +6,9 @@
 #include <string.h>
 #include <netinet/in.h>
 #include <ctype.h>
+#include "ansi_color.h"
 
+#define MAX_BUFF_CONTENT 4256
 /**
  * @brief Macro for printing the parsing tree
  * (same protocol, same depth)
@@ -28,11 +30,26 @@
 } while(0)
 
 /**
+ * @brief Macro for printing the parsing tree
+ * (new protocol, new depth)
+ *
+ */
+#define PRINT_CONTENT(prof, verbose, size, buff) do { \
+    print_content(prof, verbose, size, buff); \
+} while(0)
+
+/**
  * @brief Function printing the parsing tree for readability
  * Handles indentation and formatting
  *
  */
 void print_tree(int prof);
+
+/**
+ * @brief Function printing applicative content
+ *
+ */
+void print_content(int prof, int verbose, int size, char* buff);
 
 /**
  * @brief Function printing the parsing tree for readability
