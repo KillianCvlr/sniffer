@@ -84,3 +84,26 @@ void print_ip_from_uint8(uint8_t *addr){
     addr[3]);
     return;
 }
+
+int pow(int base, int exp){
+    int res = 1;
+    for(int i = 0; i < exp; i++){
+        res *= base;
+    }
+    return res;
+}
+
+int value_hex(uint8_t *buff, int size){
+    int somme = 0;
+    for(int i = 0; i < size; i++){
+        somme += pow(16, size - i - 1) * buff[i];
+    }
+    return somme;
+}
+
+void print_hex(uint8_t *buff, int size){
+    for(int i = 0; i < size; i++){
+        printf("%02x", buff[i]);
+    }
+    return;
+}   

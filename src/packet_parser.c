@@ -494,24 +494,35 @@ void parse_bootp(const u_char *packet, int verbose, int prof) {
 
         PRINT_TREE(prof, BGRN "Server host name : " GRN " %s\n", bootp_header->bp_sname);
         PRINT_TREE(prof, BGRN "Boot file name : " GRN " %s\n", bootp_header->bp_file);
-        PRINT_TREE(prof, BGRN "Magic cookie : " GRN " 0x%.2x\n", bootp_header->bp_vend);
+        if(dhcp_tag(bootp_header)){ 
+            PRINT_TREE(prof, BGRN "Magic cookie : " GRN);
+            printf("0x%.2x%.2x%.2x%.2x", bootp_header->bp_vend[0], 
+                    bootp_header->bp_vend[1],
+                    bootp_header->bp_vend[2], 
+                    bootp_header->bp_vend[3] );
+            printf("\n");
+        }
+
 
         //Option parsing
         int i = 4 ;
+        int size = 0;
         while (i < 64) {
             switch (bootp_header->bp_vend[i]) {
             case TAG_PAD:
                 i++;
                 break;
             case TAG_SUBNET_MASK:
+                size = bootp_header->bp_vend[i + 1];
                 PRINT_TREE(prof, "Subnet mask : ");
-                print_ip_from_uint8(bootp_header->bp_vend + i + 2);
-                printf("\n");
-                i += bootp_header->bp_vend[i + 1] + 2;
+                print_ip_from_uint8(bootp_header->bp_vend + i + 2); printf("   ");
+                print_dhcp_arg(size, i, bootp_header->bp_vend);
+                i += size + 2;
                 break;
             case TAG_TIME_OFFSET:
-                PRINT_TREE(prof, "Time offset : %i\n", bootp_header->bp_vend[i + 2]);
-                i += bootp_header->bp_vend[i + 1] + 2;
+                size = bootp_header->bp_vend[i + 1];
+                PRINT_TREE(prof, "Time offset : ");
+                print_dhcp_arg(size, i, bootp_header->bp_vend);
                 break;
             case TAG_GATEWAY:
                 PRINT_TREE(prof, "Gateway : ");
@@ -568,8 +579,14 @@ void parse_bootp(const u_char *packet, int verbose, int prof) {
                 i += bootp_header->bp_vend[i + 1] + 2;
 
             case TAG_HOSTNAME:
-                PRINT_TREE(prof, "Hostname : %s\n", bootp_header->bp_vend + i + 2);
-                i += bootp_header->bp_vend[i + 1] + 2;
+                size = bootp_header->bp_vend[i + 1];
+                PRINT_TREE(prof, "Hostname : ");
+                for(int j = 0; j < size; j++){
+                    printf("%c", bootp_header->bp_vend[i + 2 + j]);
+                }
+                printf(" ");
+                print_dhcp_arg(size, i, bootp_header->bp_vend);
+                i += size + 2;
                 break;
             
             case TAG_BOOTSIZE:
@@ -585,12 +602,14 @@ void parse_bootp(const u_char *packet, int verbose, int prof) {
                 break;
             
             case TAG_IP_LEASE:
-                PRINT_TREE(prof, "Lease time : %i\n", bootp_header->bp_vend[i + 2]);
-                i += bootp_header->bp_vend[i + 1] + 2;
+                size = bootp_header->bp_vend[i + 1];
+                PRINT_TREE(prof, "Lease time : ");
+                print_dhcp_arg(size, i, bootp_header->bp_vend);
+                i += size + 2;
                 break;
             
             case TAG_OPT_OVERLOAD:
-                PRINT_TREE(prof, "Overload : %i\n", bootp_header->bp_vend[i + 2]);
+                PRINT_TREE(prof, "Option overload : \n");
                 i += bootp_header->bp_vend[i + 1] + 2;
                 break;
 
@@ -647,33 +666,43 @@ void parse_bootp(const u_char *packet, int verbose, int prof) {
                 break;
             
             case TAG_MESSAGE:
-                PRINT_TREE(prof, "Message : %s\n", bootp_header->bp_vend + i + 2);
-                i += bootp_header->bp_vend[i + 1] + 2;
-                break;
+                size = bootp_header->bp_vend[i + 1];
+                PRINT_TREE(prof, "MESSAGE : ");
+                print_dhcp_arg(size, i, bootp_header->bp_vend);
+                i += size + 2;
 
             case TAG_MAX_MSG_SIZE:
-                PRINT_TREE(prof, "Max size : %i\n", bootp_header->bp_vend[i + 2]);
-                i += bootp_header->bp_vend[i + 1] + 2;
-                break;
+                size = bootp_header->bp_vend[i + 1];
+                PRINT_TREE(prof, "Max message size : ");
+                print_dhcp_arg(size, i, bootp_header->bp_vend);
+                i += size + 2;
             
             case TAG_RENEWAL_TIME:
-                PRINT_TREE(prof, "Renewal time : %i\n", bootp_header->bp_vend[i + 2]);
-                i += bootp_header->bp_vend[i + 1] + 2;
+                int size = bootp_header->bp_vend[i + 1];
+                PRINT_TREE(prof, "Renewal time : ");
+                print_dhcp_arg(size, i, bootp_header->bp_vend);
+                i += size + 2;
                 break;
             
             case TAG_REBIND_TIME:
-                PRINT_TREE(prof, "Rebind time : %i\n", bootp_header->bp_vend[i + 2]);
-                i += bootp_header->bp_vend[i + 1] + 2;
+                size = bootp_header->bp_vend[i + 1];
+                PRINT_TREE(prof, "Rebind time : ");
+                print_dhcp_arg(size, i, bootp_header->bp_vend);
+                i += size + 2;
                 break;
 
             case TAG_VENDOR_CLASS:
-                PRINT_TREE(prof, "Vendor class : %s\n", bootp_header->bp_vend + i + 2);
-                i += bootp_header->bp_vend[i + 1] + 2;
+                size = bootp_header->bp_vend[i + 1];
+                PRINT_TREE(prof, "Vendor class : ");
+                print_dhcp_arg(size, i, bootp_header->bp_vend);
+                i += size + 2;
                 break;
-            
+
             case TAG_CLIENT_ID:
-                PRINT_TREE(prof, "Client ID : %i\n", bootp_header->bp_vend[i + 2]);
-                i += bootp_header->bp_vend[i + 1] + 2;
+                size = bootp_header->bp_vend[i + 1];
+                PRINT_TREE(prof, "Client ID : ");
+                print_dhcp_arg(size, i, bootp_header->bp_vend);
+                i += size + 2;
                 break;
 
             case TAG_END:
@@ -688,6 +717,14 @@ void parse_bootp(const u_char *packet, int verbose, int prof) {
         break;
     }  
 }
+
+print_dhcp_arg(int size, int i, u_int8_t *bp_vend){
+    printf("0x");
+    for(int j = 0; j < size; j++){
+        printf("%.2x", bp_vend[i + 2 + j]);
+    }
+    printf("\n");
+} 
 
 int dhcp_tag(struct bootp* bootp_header){
     int i = 4;
