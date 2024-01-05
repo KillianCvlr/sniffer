@@ -5,7 +5,10 @@
 #include <time.h>
 
 #include "headers.h"
-#include "packet_parser.h"
+#include "data_link_layer.h"
+#include "network_layer.h"
+#include "transport_layer.h"
+#include "application_layer.h"
 #include "args.h"
 
 

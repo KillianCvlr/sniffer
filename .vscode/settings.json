@@ -13,7 +13,10 @@
         "stdio.h": "c",
         "headers.h": "c",
         "ip6.h": "c",
-        "in.h": "c"
+        "in.h": "c",
+        "application_layer.h": "c",
+        "transport_layer.h": "c",
+        "data_link_layer.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

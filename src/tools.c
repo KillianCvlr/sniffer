@@ -1,4 +1,4 @@
-#include "tool.h"
+#include "tools.h"
 
 void print_tree(int prof){
     for(int i = 0; i < prof; i++){
