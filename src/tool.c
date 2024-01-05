@@ -96,14 +96,7 @@ int pow(int base, int exp){
 int value_hex(uint8_t *buff, int size){
     int somme = 0;
     for(int i = 0; i < size; i++){
-        somme += pow(16, size - i - 1) * buff[i];
+        somme += pow(16, size - i - 1) * *(buff+ i);
     }
     return somme;
 }
-
-void print_hex(uint8_t *buff, int size){
-    for(int i = 0; i < size; i++){
-        printf("%02x", buff[i]);
-    }
-    return;
-}   

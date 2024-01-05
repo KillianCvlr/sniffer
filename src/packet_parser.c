@@ -525,58 +525,169 @@ void parse_bootp(const u_char *packet, int verbose, int prof) {
                 print_dhcp_arg(size, i, bootp_header->bp_vend);
                 break;
             case TAG_GATEWAY:
+                size = bootp_header->bp_vend[i + 1];
                 PRINT_TREE(prof, "Gateway : ");
-                print_ip_from_uint8(bootp_header->bp_vend + i + 2);
-                printf("\n");
-                i += bootp_header->bp_vend[i + 1] + 2;
+                if (size / 4) {
+                    printf("\n");
+                    for(int nb = 0; nb < (size /4); nb++){
+                        print_tree(prof); printf("\t");
+                        print_ip_from_uint8(bootp_header->bp_vend + i + 2 + nb*4);
+                        printf("   ");
+                        print_dhcp_arg(4 , i + nb*4, bootp_header->bp_vend);
+                    }
+                } else {
+                    print_ip_from_uint8(bootp_header->bp_vend + i + 2);
+                    printf("   ");
+                    print_dhcp_arg(size, i, bootp_header->bp_vend);
+                }
+                i += size + 2;
                 break;
             case TAG_TIME_SERVER:
+                size = bootp_header->bp_vend[i + 1];
                 PRINT_TREE(prof, "Time server : ");
-                print_ip_from_uint8(bootp_header->bp_vend + i + 2);
-                printf("\n");
-                i += bootp_header->bp_vend[i + 1] + 2;
+                if (size / 4) {
+                    printf("\n");
+                    for(int nb = 0; nb < (size /4); nb++){
+                        print_tree(prof); printf("\t");
+                        print_ip_from_uint8(bootp_header->bp_vend + i + 2 + nb*4);
+                        printf("   ");
+                        print_dhcp_arg(4 , i + nb*4, bootp_header->bp_vend);
+                    }
+                } else {
+                    print_ip_from_uint8(bootp_header->bp_vend + i + 2);
+                    printf("   ");
+                    print_dhcp_arg(size, i, bootp_header->bp_vend);
+                }
+                i += size + 2;
                 break;
             case TAG_NAME_SERVER:
+                size = bootp_header->bp_vend[i + 1];
                 PRINT_TREE(prof, "Name server : ");
-                print_ip_from_uint8(bootp_header->bp_vend + i + 2);
-                printf("\n");
-                i += bootp_header->bp_vend[i + 1] + 2;
+                if (size / 4) {
+                    printf("\n");
+                    for(int nb = 0; nb < (size /4); nb++){
+                        print_tree(prof); printf("\t");
+                        print_ip_from_uint8(bootp_header->bp_vend + i + 2 + nb*4);
+                        printf("   ");
+                        print_dhcp_arg(4 , i + nb*4, bootp_header->bp_vend);
+                    }
+                } else {
+                    print_ip_from_uint8(bootp_header->bp_vend + i + 2);
+                    printf("   ");
+                    print_dhcp_arg(size, i, bootp_header->bp_vend);
+                }
+                i += size + 2;
                 break;
             case TAG_DOMAIN_SERVER:
+                size = bootp_header->bp_vend[i + 1];
                 PRINT_TREE(prof, "Domain server : ");
-                print_ip_from_uint8(bootp_header->bp_vend + i + 2);
-                printf("\n");
-                i += bootp_header->bp_vend[i + 1] + 2;
+                if (size / 4) {
+                    printf("\n");
+                    for(int nb = 0; nb < (size /4); nb++){
+                        print_tree(prof); printf("\t");
+                        print_ip_from_uint8(bootp_header->bp_vend + i + 2 + nb*4);
+                        printf("   ");
+                        print_dhcp_arg(4 , i + nb*4, bootp_header->bp_vend);
+                    }
+                } else {
+                    print_ip_from_uint8(bootp_header->bp_vend + i + 2);
+                    printf("   ");
+                    print_dhcp_arg(size, i, bootp_header->bp_vend);
+                }
+                i += size + 2;
                 break;
             case TAG_LOG_SERVER:
+                size = bootp_header->bp_vend[i + 1];
                 PRINT_TREE(prof, "Log server : ");
-                print_ip_from_uint8(bootp_header->bp_vend + i + 2);
-                printf("\n");
-                i += bootp_header->bp_vend[i + 1] + 2;
+                if (size / 4) {
+                    printf("\n");
+                    for(int nb = 0; nb < (size /4); nb++){
+                        print_tree(prof); printf("\t");
+                        print_ip_from_uint8(bootp_header->bp_vend + i + 2 + nb*4);
+                        printf("   ");
+                        print_dhcp_arg(4 , i + nb*4, bootp_header->bp_vend);
+                    }
+                } else {
+                    print_ip_from_uint8(bootp_header->bp_vend + i + 2);
+                    printf("   ");
+                    print_dhcp_arg(size, i, bootp_header->bp_vend);
+                }
+                i += size + 2;
                 break;
             case TAG_COOKIE_SERVER:
+                size = bootp_header->bp_vend[i + 1];
                 PRINT_TREE(prof, "Cookie server : ");
-                print_ip_from_uint8(bootp_header);
-                printf("\n");
-                i += bootp_header->bp_vend[i + 1] + 2;
+                if (size / 4) {
+                    printf("\n");
+                    for(int nb = 0; nb < (size /4); nb++){
+                        print_tree(prof); printf("\t");
+                        print_ip_from_uint8(bootp_header->bp_vend + i + 2 + nb*4);
+                        printf("   ");
+                        print_dhcp_arg(4 , i + nb*4, bootp_header->bp_vend);
+                    }
+                } else {
+                    print_ip_from_uint8(bootp_header->bp_vend + i + 2);
+                    printf("   ");
+                    print_dhcp_arg(size, i, bootp_header->bp_vend);
+                }
+                i += size + 2;
+                break;
             
             case TAG_LPR_SERVER:
+                size = bootp_header->bp_vend[i + 1];
                 PRINT_TREE(prof, "LPR server : ");
-                print_ip_from_uint8(bootp_header->bp_vend + i + 2);
-                printf("\n");
-                i += bootp_header->bp_vend[i + 1] + 2;
+                if (size / 4) {
+                    printf("\n");
+                    for(int nb = 0; nb < (size /4); nb++){
+                        print_tree(prof); printf("\t");
+                        print_ip_from_uint8(bootp_header->bp_vend + i + 2 + nb*4);
+                        printf("   ");
+                        print_dhcp_arg(4 , i + nb*4, bootp_header->bp_vend);
+                    }
+                } else {
+                    print_ip_from_uint8(bootp_header->bp_vend + i + 2);
+                    printf("   ");
+                    print_dhcp_arg(size, i, bootp_header->bp_vend);
+                }
+                i += size + 2;
+                break;
             
             case TAG_IMPRESS_SERVER:
+                size = bootp_header->bp_vend[i + 1];
                 PRINT_TREE(prof, "Impress server : ");
-                print_ip_from_uint8(bootp_header->bp_vend + i + 2);
-                printf("\n");
-                i += bootp_header->bp_vend[i + 1] + 2;
+                if (size / 4) {
+                    printf("\n");
+                    for(int nb = 0; nb < (size /4); nb++){
+                        print_tree(prof); printf("\t");
+                        print_ip_from_uint8(bootp_header->bp_vend + i + 2 + nb*4);
+                        printf("   ");
+                        print_dhcp_arg(4 , i + nb*4, bootp_header->bp_vend);
+                    }
+                } else {
+                    print_ip_from_uint8(bootp_header->bp_vend + i + 2);
+                    printf("   ");
+                    print_dhcp_arg(size, i, bootp_header->bp_vend);
+                }
+                i += size + 2;
+                break;
 
             case TAG_RLP_SERVER:
+                size = bootp_header->bp_vend[i + 1];
                 PRINT_TREE(prof, "RLP server : ");
-                print_ip_from_uint8(bootp_header->bp_vend + i + 2);
-                printf("\n");
-                i += bootp_header->bp_vend[i + 1] + 2;
+                if (size / 4) {
+                    printf("\n");
+                    for(int nb = 0; nb < (size /4); nb++){
+                        print_tree(prof); printf("\t");
+                        print_ip_from_uint8(bootp_header->bp_vend + i + 2 + nb*4);
+                        printf("   ");
+                        print_dhcp_arg(4 , i + nb*4, bootp_header->bp_vend);
+                    }
+                } else {
+                    print_ip_from_uint8(bootp_header->bp_vend + i + 2);
+                    printf("   ");
+                    print_dhcp_arg(size, i, bootp_header->bp_vend);
+                }
+                i += size + 2;
 
             case TAG_HOSTNAME:
                 size = bootp_header->bp_vend[i + 1];
@@ -676,6 +787,7 @@ void parse_bootp(const u_char *packet, int verbose, int prof) {
                 PRINT_TREE(prof, "Max message size : ");
                 print_dhcp_arg(size, i, bootp_header->bp_vend);
                 i += size + 2;
+                break;
             
             case TAG_RENEWAL_TIME:
                 int size = bootp_header->bp_vend[i + 1];
@@ -702,6 +814,9 @@ void parse_bootp(const u_char *packet, int verbose, int prof) {
                 size = bootp_header->bp_vend[i + 1];
                 PRINT_TREE(prof, "Client ID : ");
                 print_dhcp_arg(size, i, bootp_header->bp_vend);
+                print_content(prof, verbose, size, bootp_header->bp_vend + i + 2);
+                printf("\n");                
+                print_tree(prof); printf("\n");
                 i += size + 2;
                 break;
 
@@ -742,12 +857,12 @@ int dhcp_tag(struct bootp* bootp_header){
 }
 
 void parse_dns(const u_char *packet, int verbose, int prof) {
-    struct dns_header *dns_header = (struct dns_header *)(packet + sizeof(struct iphdr));
+    struct dns_header *dns_header = (struct dns_header *)packet;
     switch (verbose) {
     case 1:
     case 2:
     case 3:
-        PRINT_NEW_STATE(prof, verbose, "DNS");
+        PRINT_NEW_STATE(prof, verbose, BGRN "DNS" GRN);
 
        if(verbose == 1) break ; // No need to print the rest of the header
 
@@ -771,6 +886,8 @@ void parse_dns(const u_char *packet, int verbose, int prof) {
         PRINT_TREE(prof, "Authority RRs : %i\n", ntohs(dns_header->nscount));
         PRINT_TREE(prof, "Additional RRs : %i\n", ntohs(dns_header->arcount));
         break;
+
+        //TO DO : parse the rest of the packet ie questions, answers, authority, additional
     }
 }
 
@@ -822,6 +939,7 @@ void parse_ftp(const u_char *packet, int verbose, int prof, int size) {
 
         if(verbose == 1) break ; // No need to print the rest of the header
 
+        // FTP is pretty-much self-explanatory, no need to parse the options
         print_content(prof, verbose, size, packet);
     }
 

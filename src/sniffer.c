@@ -15,9 +15,10 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 const u_char *packet);
 
 void print_packet_info(const u_char *packet, struct pcap_pkthdr packet_header){
+    printf("\n");
     printf(BWHT "Packet capture length: " WHT "%d\n", packet_header.caplen);
     printf(BWHT "Packet total length: " WHT "%d\n", packet_header.len);
-    printf(BWHT "Packet timestamp: " WHT"%s\n", ctime((const time_t *)&packet_header.ts.tv_sec));   
+    printf(BWHT "Packet timestamp: " WHT"%s", ctime((const time_t *)&packet_header.ts.tv_sec));   
 };
 
 int main(int argc, char *argv[]) {
@@ -100,7 +101,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
     static int packet_id = 1;
     int verbose = args[0];
 
-    if (verbose >= 2) print_packet_info(packet, *header);
+    if (verbose >= 3) print_packet_info(packet, *header);
 
     printf( BHRED "%d ", packet_id);
     parse_ethernet((char *)packet, verbose, 0);
