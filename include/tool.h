@@ -49,7 +49,7 @@ void print_tree(int prof);
  * @brief Function printing applicative content
  *
  */
-void print_content(int prof, int verbose, int size, char* buff);
+void print_content(int prof, int verbose, int size, const u_char* buff);
 
 /**
  * @brief Function printing the parsing tree for readability
@@ -80,5 +80,11 @@ void print_ip(struct in_addr);
 * @brief Function printing an ip address from a uint8_t array
 */
 void print_ip_from_uint8(uint8_t *ip);
+
+/**
+ * @brief Function returning the power of a number
+ *
+ */
+int pow_int(int base, int exp);
 
 #endif

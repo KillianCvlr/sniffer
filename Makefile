@@ -11,18 +11,17 @@ SRCDIR   = src
 OBJDIR   = obj
 BINDIR   = bin
 
-SOURCES  := $(wildcard $(SRCDIR)/*.c)
-INCLUDES := $(wildcard $(INCLUDE_PATH)/*.h)
+SOURCES  := $(wildcard $(SRCDIR)/*.c $(SRCDIR)/protocols/*.c)
+INCLUDES := $(wildcard $(INCLUDE_PATH)/*.h $(INCLUDE_PATH)/protocols/*.h)
 OBJECTS  := $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 
 $(BINDIR)/$(TARGET): $(OBJECTS)
 	mkdir -p $(BINDIR)
 	$(CC) -o $@ $^ $(CFLAGS) $(LDLIBS)
 	@echo "Linking complete!"
-	sudo ./bin/sniffer -v 3 -o samples/icmp.pcap
-	
+
 $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c
-	mkdir -p $(OBJDIR)
+	mkdir -p $(dir $@)
 	$(CC) -o $@ -c $< $(CFLAGS) -I$(INCLUDE_PATH)
 
 doc:
@@ -33,4 +32,7 @@ clean:
 	rm -f $(OBJDIR)/*.o
 	rm -f $(OBJDIR)/*.gcda
 	rm -f $(OBJDIR)/*.gcno
+	rm -f $(OBJDIR)/protocols/*.o
+	rm -f $(OBJDIR)/protocols/*.gcda
+	rm -f $(OBJDIR)/protocols/*.gcno
 	rm -f $(BINDIR)/$(TARGET)

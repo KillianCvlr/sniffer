@@ -1,4 +1,4 @@
-#include "packet_parser.h"
+#include "protocols/packet_parser.h"
 
 
 void parse_ethernet(const u_char *packet, int verbose, int prof) {
@@ -27,8 +27,7 @@ void parse_ethernet(const u_char *packet, int verbose, int prof) {
     printf(BLU);
     switch (ntohs(eth_header->ether_type)) {
     case ETHERTYPE_ARP: // 0x0806
-        parse_arp(packet + sizeof(struct ether_header), eth_header->ether_dhost,
-                    eth_header->ether_shost, verbose, prof+1);
+        parse_arp(packet + sizeof(struct ether_header), verbose, prof+1);
         break;
 
     case ETHERTYPE_IP: // 0x0800
@@ -43,7 +42,7 @@ void parse_ethernet(const u_char *packet, int verbose, int prof) {
     }
 }
 
-void parse_arp(const u_char *packet, uint8_t *ether_dhost, uint8_t *ether_shost, int verbose, int prof) {
+void parse_arp(const u_char *packet, int verbose, int prof) {
     struct ether_arp *arp_header = (struct ether_arp *)packet;
     switch (verbose) {
     case 1:
@@ -248,7 +247,6 @@ void parse_udp(const u_char *packet, int verbose, int prof, int size) {
 
 void parse_tcp(const u_char *packet, int verbose, int prof, int size){
     struct tcphdr *tcp = (struct tcphdr *)(packet);
-    int continue_parsing = 0;
     switch (verbose) {
     case 1:
     case 2:
@@ -688,6 +686,7 @@ void parse_bootp(const u_char *packet, int verbose, int prof) {
                     print_dhcp_arg(size, i, bootp_header->bp_vend);
                 }
                 i += size + 2;
+                break;
 
             case TAG_HOSTNAME:
                 size = bootp_header->bp_vend[i + 1];
@@ -781,6 +780,7 @@ void parse_bootp(const u_char *packet, int verbose, int prof) {
                 PRINT_TREE(prof, "MESSAGE : ");
                 print_dhcp_arg(size, i, bootp_header->bp_vend);
                 i += size + 2;
+                break;
 
             case TAG_MAX_MSG_SIZE:
                 size = bootp_header->bp_vend[i + 1];
@@ -833,12 +833,13 @@ void parse_bootp(const u_char *packet, int verbose, int prof) {
     }  
 }
 
-print_dhcp_arg(int size, int i, u_int8_t *bp_vend){
+void print_dhcp_arg(int size, int i, const u_int8_t *bp_vend){
     printf("0x");
     for(int j = 0; j < size; j++){
         printf("%.2x", bp_vend[i + 2 + j]);
     }
     printf("\n");
+    return;
 } 
 
 int dhcp_tag(struct bootp* bootp_header){
@@ -907,26 +908,27 @@ void parse_http(const u_char *packet, int verbose, int prof, int size) {
     switch (verbose) {
     case 1:
     case 2:
-    case 3:            
-        if (strstr(packet, "GET") != NULL) {
+    case 3:        
+        const char* packet_char  = (const char*)(packet); 
+        if (strstr(packet_char, "GET") != NULL) {
             PRINT_NEW_STATE(prof, verbose, BGRN "HTTP" GRN " (GET)");
-        } else if (strstr(packet, "HEAD") != NULL) {
+        } else if (strstr(packet_char, "HEAD") != NULL) {
             PRINT_NEW_STATE(prof, verbose, BGRN "HTTP" GRN " (HEAD)");
-        } else if (strstr(packet, "POST") != NULL) {
+        } else if (strstr(packet_char, "POST") != NULL) {
             PRINT_NEW_STATE(prof, verbose, BGRN "HTTP" GRN " (POST)");
-        } else if (strstr(packet, "PUT") != NULL) {
+        } else if (strstr(packet_char, "PUT") != NULL) {
             PRINT_NEW_STATE(prof, verbose, BGRN "HTTP" GRN " (PUT)");
-        } else if (strstr(packet, "DELETE") != NULL) {
+        } else if (strstr(packet_char, "DELETE") != NULL) {
             PRINT_NEW_STATE(prof, verbose, BGRN "HTTP" GRN " (DELETE)");
-        } else if (strstr(packet, "CONNECT") != NULL) {
+        } else if (strstr(packet_char, "CONNECT") != NULL) {
             PRINT_NEW_STATE(prof, verbose, BGRN "HTTP" GRN " (CONNECT)");
-        } else if (strstr(packet, "OPTIONS") != NULL) {
+        } else if (strstr(packet_char, "OPTIONS") != NULL) {
             PRINT_NEW_STATE(prof, verbose, BGRN "HTTP" GRN " (OPTIONS)");
-        } else if (strstr(packet, "TRACE") != NULL) {
+        } else if (strstr(packet_char, "TRACE") != NULL) {
             PRINT_NEW_STATE(prof, verbose, BGRN "HTTP" GRN " (TRACE)");
-        } else if (strstr(packet, "PATCH") != NULL) {
+        } else if (strstr(packet_char, "PATCH") != NULL) {
             PRINT_NEW_STATE(prof, verbose, BGRN "HTTP" GRN " (PATCH)");
-        } else if (strstr(packet, "OK") != NULL){
+        } else if (strstr(packet_char, "OK") != NULL){
             PRINT_NEW_STATE(prof, verbose, BGRN "HTTP" GRN " (OK)");
         } else {
             PRINT_NEW_STATE(prof, verbose, BGRN "HTTP" GRN " ()");
@@ -983,7 +985,8 @@ void parse_imap(const u_char *packet, int verbose, int prof, int size) {
     }
 }
 
-void options_imap(const u_char *packet, char * buff){
+void options_imap(const u_char *packet_arg, char * buff){
+    const char * packet =(const char*)(packet_arg);
       if (strstr(packet, "OK LOGIN") != NULL) {
         strcpy(buff, "OK LOGIN");
     } else if (strstr(packet, "LOGIN") != NULL) {
@@ -1252,7 +1255,7 @@ void parse_telnet(const u_char *packet, int verbose, int prof, int size) {
     }
 }
 
-void parse_pop3(const u_char *packet, int verbose, int prof, int size) {
+void parse_pop3(const u_char *packet, int verbose, int prof, int size){
     switch (verbose) {
     case 1:
     case 2:
@@ -1263,4 +1266,5 @@ void parse_pop3(const u_char *packet, int verbose, int prof, int size) {
         
         print_content(prof, verbose, size, packet);
     }
+    return;
 }   

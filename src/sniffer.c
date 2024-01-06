@@ -5,21 +5,33 @@
 #include <time.h>
 
 #include "headers.h"
-#include "packet_parser.h"
+#include "protocols/packet_parser.h"
 #include "args.h"
 
 
 char errbuf[PCAP_ERRBUF_SIZE];
 
-void got_packet(u_char *args, const struct pcap_pkthdr *header,
-                const u_char *packet);
-
-void print_packet_info(const u_char *packet, struct pcap_pkthdr packet_header){
+void print_packet_info(struct pcap_pkthdr packet_header){
     printf("\n");
     printf(BWHT "Packet capture length: " WHT "%d\n", packet_header.caplen);
     printf(BWHT "Packet total length: " WHT "%d\n", packet_header.len);
     printf(BWHT "Packet timestamp: " WHT"%s", ctime((const time_t *)&packet_header.ts.tv_sec));   
 };
+
+void got_packet(u_char *args, const struct pcap_pkthdr *header,
+                const u_char *packet) {
+    static int packet_id = 1;
+    int verbose = args[0];
+
+    if (verbose >= 3) print_packet_info(*header);
+
+    printf( BHRED "%d ", packet_id);
+    parse_ethernet((const u_char *)packet, verbose, 0);
+    printf("\n");
+    packet_id++;
+}
+
+
 
 int main(int argc, char *argv[]) {
 
@@ -34,9 +46,8 @@ int main(int argc, char *argv[]) {
     checkOption(&options);
     
     char *device;
+    pcap_if_t *alldevsp;
     pcap_t *handle;
-    const u_char *packet;
-    struct pcap_pkthdr packet_header;
     int packet_count_limit = 1;
     int timeout_limit = 10000; /* In milliseconds */
 
@@ -44,12 +55,11 @@ int main(int argc, char *argv[]) {
     if (options.input == INPUT_DEFAULT) {
        char errbuf[PCAP_ERRBUF_SIZE];
 
-        device = pcap_lookupdev(errbuf);
-        if (device == NULL) {
+        if (pcap_findalldevs(&alldevsp, errbuf) == -1) {
             printf("Error finding device: %s\n", errbuf);
             return 1;
         }
-
+        device = alldevsp->name;
         // Afficher le nom de l'interface par défaut
         printf("Listening on standard device : %s\n", device);
         handle = pcap_open_live(device, BUFSIZ, packet_count_limit, timeout_limit, errbuf);
@@ -91,20 +101,9 @@ int main(int argc, char *argv[]) {
     pcap_loop(handle, options.nb_packet, got_packet, (u_char *)&options.verbose);
 
     /* Quitting*/
+    if(options.input == INPUT_DEFAULT) pcap_freealldevs(alldevsp);
     pcap_close(handle);
     closeOption(&options);
     return 0;
 }
 
-void got_packet(u_char *args, const struct pcap_pkthdr *header,
-                const u_char *packet) {
-    static int packet_id = 1;
-    int verbose = args[0];
-
-    if (verbose >= 3) print_packet_info(packet, *header);
-
-    printf( BHRED "%d ", packet_id);
-    parse_ethernet((char *)packet, verbose, 0);
-    printf("\n");
-    packet_id++;
-}

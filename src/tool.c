@@ -8,7 +8,7 @@ void print_tree(int prof){
     return;
 }
 
-void print_content(int prof, int verbose, int size, char* buff){
+void print_content(int prof, int verbose, int size, const u_char* buff){
     if(verbose == 1) return;
     if(size != 0){
         print_tree(prof);
@@ -84,7 +84,7 @@ void print_ip_from_uint8(uint8_t *addr){
     return;
 }
 
-int pow(int base, int exp){
+int pow_int(int base, int exp){
     int res = 1;
     for(int i = 0; i < exp; i++){
         res *= base;
@@ -95,7 +95,7 @@ int pow(int base, int exp){
 int value_hex(uint8_t *buff, int size){
     int somme = 0;
     for(int i = 0; i < size; i++){
-        somme += pow(16, size - i - 1) * *(buff+ i);
+        somme += pow_int(16, size - i - 1) * *(buff+ i);
     }
     return somme;
 }
