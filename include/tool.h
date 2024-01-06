@@ -26,7 +26,7 @@
 #define PRINT_NEW_STATE(prof, verbose, message) do { \
     print_new_state(prof, verbose); \
     printf(message); \
-    if(verbose >= 2) printf("\n"); \
+    if(verbose >= 2) printf(" * \n"); \
 } while(0)
 
 /**

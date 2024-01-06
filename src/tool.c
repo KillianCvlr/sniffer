@@ -29,7 +29,6 @@ void print_content(int prof, int verbose, int size, char* buff){
 
 void print_new_state(int prof, int verbose){
     if(prof == 0){
-        printf("* ");
         return;
     }
     if(verbose == 1){

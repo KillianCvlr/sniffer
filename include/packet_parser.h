@@ -14,7 +14,7 @@ void parse_tcp(const u_char *packet, int verbose, int prof, int size);
 void parse_icmp(const u_char *packet, int verbose, int prof);
 void parse_bootp(const u_char *packet, int verbose, int prof);
 void parse_dhcp(const u_char *packet, int verbose, int prof);
-void parse_dns(const u_char *packet, int verbose, int prof);
+void parse_dns(const u_char *packet, int verbose, int prof, int size);
 void parse_http(const u_char *packet, int verbose, int prof, int size);
 void parse_ftp(const u_char *packet, int verbose, int prof, int size);
 void parse_smtp(const u_char *packet, int verbose, int prof, int size);

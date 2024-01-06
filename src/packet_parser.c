@@ -120,7 +120,7 @@ void parse_ipv4(const u_char *packet, int verbose, int prof) {
     case 1:
     case 2:    
     case 3:
-        PRINT_NEW_STATE(prof, verbose, BBLU "IPV4" BLU);
+        PRINT_NEW_STATE(prof, verbose, BHBLU "IPV4" BLU);
 
        if(verbose == 1) break ; // No need to print the IP addresses
 
@@ -220,13 +220,14 @@ void parse_udp(const u_char *packet, int verbose, int prof, int size) {
 
     // Rest of the packet (protocol under UDP)
     printf(GRN);
+    int size2 = size - sizeof(struct udphdr);
     switch (ntohs(udp->uh_sport)) {
     case 0x43:
     case 0x44:
         parse_bootp(packet + sizeof(struct udphdr), verbose, prof +1);
         break;
     case 0x35:
-        parse_dns(packet + sizeof(struct udphdr), verbose, prof +1);
+        parse_dns(packet + sizeof(struct udphdr), verbose, prof +1, size2);
         break;
     default:
         switch (ntohs(udp->uh_dport)) {
@@ -235,7 +236,7 @@ void parse_udp(const u_char *packet, int verbose, int prof, int size) {
             parse_bootp(packet + sizeof(struct udphdr), verbose, prof +1);
             break;
         case 0x35:
-            parse_dns(packet + sizeof(struct udphdr), verbose, prof +1);
+            parse_dns(packet + sizeof(struct udphdr), verbose, prof +1, size2);
             break;
         default:
             PRINT_NEW_STATE(prof +1, verbose, "DATA");
@@ -317,7 +318,7 @@ void parse_tcp(const u_char *packet, int verbose, int prof, int size){
             parse_bootp(packet + 4*tcp->th_off, verbose, prof +1);
             break;
         case 0x35:
-            parse_dns(packet + 4*tcp->th_off, verbose, prof +1);
+            parse_dns(packet + 4*tcp->th_off, verbose, prof +1, size);
             break;
         case 0x8F:
             parse_imap(packet + 4*tcp->th_off, verbose, prof +1, size);
@@ -346,7 +347,7 @@ void parse_tcp(const u_char *packet, int verbose, int prof, int size){
                 parse_bootp(packet + 4*tcp->th_off, verbose, prof +1);
                 break;
             case 0x35:
-                parse_dns(packet + 4*tcp->th_off, verbose, prof +1);
+                parse_dns(packet + 4*tcp->th_off, verbose, prof +1, size);
                 break;
             case 0x8F:
                 parse_imap(packet + 4*tcp->th_off, verbose, prof +1, size);
@@ -369,6 +370,33 @@ void parse_icmp(const u_char *packet, int verbose, int prof) {
     case 2:
     case 3:
         PRINT_NEW_STATE(prof, verbose, BGRN "ICMP" GRN);
+        switch (icmp->icmp_code) {
+        case ICMP_ECHOREPLY:
+            PRINT_NEW_STATE(prof, verbose, BGRN "ICMP" GRN " (Echo Reply)\n");
+            break;
+        case ICMP_DEST_UNREACH:
+            PRINT_NEW_STATE(prof, verbose, BGRN "ICMP" GRN " (Destination Unreachable)\n");
+            break;
+        case ICMP_SOURCE_QUENCH:
+            PRINT_NEW_STATE(prof, verbose, BGRN "ICMP" GRN " (Source Quench)\n");
+            break;
+        case ICMP_REDIRECT:
+            PRINT_NEW_STATE(prof, verbose, BGRN "ICMP" GRN " (Redirect (change route))\n");
+            break;
+        case ICMP_ECHO:
+            PRINT_NEW_STATE(prof, verbose, BGRN "ICMP" GRN " (Echo Request)\n");
+            break;
+        case ICMP_TIME_EXCEEDED:
+            PRINT_NEW_STATE(prof, verbose, BGRN "ICMP" GRN " (Time Exceeded)\n");
+            break;
+        case ICMP_PARAMETERPROB:
+            PRINT_NEW_STATE(prof, verbose, BGRN "ICMP" GRN " (Parameter Problem)\n");
+            break;  
+
+        default:
+            PRINT_NEW_STATE(prof, verbose, BGRN "ICMP" GRN " (Unknown)\n");
+            break;
+        }
 
        if(verbose == 1) break ; // No need to print the rest of the header
 
@@ -378,33 +406,7 @@ void parse_icmp(const u_char *packet, int verbose, int prof) {
 
         PRINT_TREE(prof, BGRN "Code : " GRN " %i", icmp->icmp_code);
         //TAG for the user's lisibility
-        switch (icmp->icmp_code) {
-        case ICMP_ECHOREPLY:
-            printf(" (Echo Reply)\n");
-            break;
-        case ICMP_DEST_UNREACH:
-            printf(" (Destination Unreachable)\n");
-            break;
-        case ICMP_SOURCE_QUENCH:
-            printf(" (Source Quench)\n");
-            break;
-        case ICMP_REDIRECT:
-            printf(" (Redirect (change route))\n");
-            break;
-        case ICMP_ECHO:
-            printf(" (Echo Request)\n");
-            break;
-        case ICMP_TIME_EXCEEDED:
-            printf(" (Time Exceeded)\n");
-            break;
-        case ICMP_PARAMETERPROB:
-            printf(" (Parameter Problem)\n");
-            break;  
-
-        default:
-            printf(" (Unknown)\n");
-            break;
-        }
+        
         PRINT_TREE(prof, BGRN "Checksum : " GRN "0x%x\n", ntohs(icmp->icmp_cksum));
         break;
     }
@@ -856,13 +858,24 @@ int dhcp_tag(struct bootp* bootp_header){
     return 0;
 }
 
-void parse_dns(const u_char *packet, int verbose, int prof) {
+void parse_dns(const u_char *packet, int verbose, int prof, int size) {
+    int rest = size - sizeof(struct dns_header);
     struct dns_header *dns_header = (struct dns_header *)packet;
     switch (verbose) {
     case 1:
     case 2:
     case 3:
         PRINT_NEW_STATE(prof, verbose, BGRN "DNS" GRN);
+        if(verbose == 1){
+            if (ntohs(dns_header->flags) & DNS_QR) printf(" QR");
+            if (ntohs(dns_header->flags) & DNS_OPCODE) printf(" OPCODE");
+            if (ntohs(dns_header->flags) & DNS_AA) printf(" AA");
+            if (ntohs(dns_header->flags) & DNS_TC) printf(" TC");
+            if (ntohs(dns_header->flags) & DNS_RD) printf(" RD");
+            if (ntohs(dns_header->flags) & DNS_RA) printf(" RA");
+            if (ntohs(dns_header->flags) & DNS_Z) printf(" Z");
+            if (ntohs(dns_header->flags) & DNS_RCODE) printf(" RCODE");
+        }
 
        if(verbose == 1) break ; // No need to print the rest of the header
 
@@ -888,6 +901,7 @@ void parse_dns(const u_char *packet, int verbose, int prof) {
         break;
 
         //TO DO : parse the rest of the packet ie questions, answers, authority, additional
+        print_content(prof, verbose, rest, packet + sizeof(struct dns_header));
     }
 }
 
@@ -934,15 +948,12 @@ void parse_ftp(const u_char *packet, int verbose, int prof, int size) {
     switch (verbose) {
     case 1:
     case 2:
+        PRINT_NEW_STATE(prof, verbose, BGRN "FTP" GRN);
+        break;
     case 3:
         PRINT_NEW_STATE(prof, verbose, BGRN "FTP" GRN);
-
-        if(verbose == 1) break ; // No need to print the rest of the header
-
-        // FTP is pretty-much self-explanatory, no need to parse the options
         print_content(prof, verbose, size, packet);
     }
-
 }
 
 void parse_smtp(const u_char *packet, int verbose, int prof, int size) {
