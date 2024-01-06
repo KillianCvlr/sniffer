@@ -19,8 +19,8 @@ $(BINDIR)/$(TARGET): $(OBJECTS)
 	mkdir -p $(BINDIR)
 	$(CC) -o $@ $^ $(CFLAGS) $(LDLIBS)
 	@echo "Linking complete!"
-	sudo ./bin/sniffer -v 3 -o samples/ftp.pcap
-
+	sudo ./bin/sniffer -v 3 -o samples/icmp.pcap
+	
 $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c
 	mkdir -p $(OBJDIR)
 	$(CC) -o $@ -c $< $(CFLAGS) -I$(INCLUDE_PATH)

@@ -23,7 +23,7 @@
  * (new protocol, new depth)
  *
  */
-#define PRINT_NEW_STATE(prof, verbose, message) do { \
+#define PRINT_NEW_STATE(prof, verbose, message...) do { \
     print_new_state(prof, verbose); \
     printf(message); \
     if(verbose >= 2) printf(" * \n"); \

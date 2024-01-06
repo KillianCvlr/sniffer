@@ -193,7 +193,7 @@ void parse_ipv6(const u_char *packet, int verbose, int prof) {
         parse_tcp(packet + sizeof(struct ip6_hdr), verbose, prof +1, size);
         break;
     case 0x3a:
-        PRINT_NEW_STATE(prof, verbose, "ICMPv6");
+        PRINT_NEW_STATE(prof+1, verbose, "ICMPv6");
         break;
     }
 }
@@ -369,32 +369,30 @@ void parse_icmp(const u_char *packet, int verbose, int prof) {
     case 1:
     case 2:
     case 3:
-        PRINT_NEW_STATE(prof, verbose, BGRN "ICMP" GRN);
-        switch (icmp->icmp_code) {
+        switch (icmp->icmp_type) {
         case ICMP_ECHOREPLY:
-            PRINT_NEW_STATE(prof, verbose, BGRN "ICMP" GRN " (Echo Reply)\n");
+            PRINT_NEW_STATE(prof, verbose, BGRN "ICMP" GRN " (Echo Reply)");
             break;
         case ICMP_DEST_UNREACH:
-            PRINT_NEW_STATE(prof, verbose, BGRN "ICMP" GRN " (Destination Unreachable)\n");
+            PRINT_NEW_STATE(prof, verbose, BGRN "ICMP" GRN " (Destination Unreachable)");
             break;
         case ICMP_SOURCE_QUENCH:
-            PRINT_NEW_STATE(prof, verbose, BGRN "ICMP" GRN " (Source Quench)\n");
+            PRINT_NEW_STATE(prof, verbose, BGRN "ICMP" GRN " (Source Quench)");
             break;
         case ICMP_REDIRECT:
-            PRINT_NEW_STATE(prof, verbose, BGRN "ICMP" GRN " (Redirect (change route))\n");
+            PRINT_NEW_STATE(prof, verbose, BGRN "ICMP" GRN " (Redirect (change route))");
             break;
         case ICMP_ECHO:
-            PRINT_NEW_STATE(prof, verbose, BGRN "ICMP" GRN " (Echo Request)\n");
+            PRINT_NEW_STATE(prof, verbose, BGRN "ICMP" GRN " (Echo Request)");
             break;
         case ICMP_TIME_EXCEEDED:
-            PRINT_NEW_STATE(prof, verbose, BGRN "ICMP" GRN " (Time Exceeded)\n");
+            PRINT_NEW_STATE(prof, verbose, BGRN "ICMP" GRN " (Time Exceeded)");
             break;
         case ICMP_PARAMETERPROB:
-            PRINT_NEW_STATE(prof, verbose, BGRN "ICMP" GRN " (Parameter Problem)\n");
+            PRINT_NEW_STATE(prof, verbose, BGRN "ICMP" GRN " (Parameter Problem)");
             break;  
-
         default:
-            PRINT_NEW_STATE(prof, verbose, BGRN "ICMP" GRN " (Unknown)\n");
+            PRINT_NEW_STATE(prof, verbose, BGRN "ICMP" GRN " (Unknown)");
             break;
         }
 
@@ -404,7 +402,7 @@ void parse_icmp(const u_char *packet, int verbose, int prof) {
 
        if(verbose == 2) break ; // No need to print the rest of the header
 
-        PRINT_TREE(prof, BGRN "Code : " GRN " %i", icmp->icmp_code);
+        PRINT_TREE(prof, BGRN "Code : " GRN " %i\n", icmp->icmp_code);
         //TAG for the user's lisibility
         
         PRINT_TREE(prof, BGRN "Checksum : " GRN "0x%x\n", ntohs(icmp->icmp_cksum));
@@ -970,16 +968,52 @@ void parse_smtp(const u_char *packet, int verbose, int prof, int size) {
 }
 
 void parse_imap(const u_char *packet, int verbose, int prof, int size) {
+    char buff[11];
+    memset(buff, 0, 11);
+    options_imap(packet, buff);
     switch (verbose) {
     case 1:
     case 2:
-    case 3:
-        PRINT_NEW_STATE(prof, verbose, BGRN "IMAP" GRN);
-
-        if(verbose == 1) break ; // No need to print the rest of the header
-        
+        PRINT_NEW_STATE(prof, verbose, BGRN "IMAP" GRN " %s", buff);
+        break;
+    case 3:     
+        PRINT_NEW_STATE(prof, verbose, BGRN "IMAP" GRN );  
         print_content(prof, verbose, size, packet);
+        break;
     }
+}
+
+void options_imap(const u_char *packet, char * buff){
+      if (strstr(packet, "OK LOGIN") != NULL) {
+        strcpy(buff, "OK LOGIN");
+    } else if (strstr(packet, "LOGIN") != NULL) {
+        strcpy(buff, "LOGIN");
+    } else if (strstr(packet, "SELECT") != NULL) {
+        strcpy(buff, "SELECT");
+    } else if (strstr(packet, "NO") != NULL) {
+        strcpy(buff, "NO");
+    } else if (strstr(packet, "BYE LOGOUT") != NULL) {
+        strcpy(buff, "BYE LOGOUT");
+    } else if (strstr(packet, "LOGOUT") != NULL) {
+        strcpy(buff, "LOGOUT");
+    } else if (strstr(packet, "NOOP") != NULL) {
+        strcpy(buff, "NOOP");
+    } else if (strstr(packet, "LIST") != NULL) {
+        strcpy(buff, "LIST");
+    } else if (strstr(packet, "CREATE") != NULL) {
+        strcpy(buff, "CREATE");
+    } else if (strstr(packet, "DELETE") != NULL) {
+        strcpy(buff, "DELETE");
+    } else if (strstr(packet, "RENAME") != NULL) {
+        strcpy(buff, "RENAME");
+    } else if (strstr(packet, "SEARCH ALL") != NULL) {
+        strcpy(buff, "SEARCH ALL");
+    } else if (strstr(packet, "OK") != NULL) {
+        strcpy(buff, "OK");
+    } else {
+        strcpy(buff, "UNKNOWN");
+    }
+
 }
 void parse_telnet(const u_char *packet, int verbose, int prof, int size) {
     switch (verbose) {
