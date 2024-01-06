@@ -1,6 +1,6 @@
 # Sniffer Project
 A C-coded sniffer using the pcap library for the "Service Réseau" course at 
-Télécom Physique Strasbourg. Made by Killian Cavalier
+Télécom Physique Strasbourg. Made by Killian Cavalier.
 Catches network packets thanks to the pcap librairy and analyses them with
 my personal code or the headers provided by the net/netinet librairies.
 Prints in color with the ansi_color librairy under public domain,
