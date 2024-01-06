@@ -109,9 +109,11 @@ void parse_tcp(const u_char *packet, int verbose, int prof, int size){
                 parse_pop3(packet + 4*tcp->th_off, verbose, prof +1, size);
                 break;
             default :
-                PRINT_NEW_STATE(prof +1, verbose, "DATA");
-                print_content(prof +1, verbose, size, packet + 4*tcp->th_off);
+                PRINT_NEW_STATE(prof +1, verbose, BGRN "DATA" GRN " (%d - %d)", ntohs(tcp->th_sport), ntohs(tcp->th_dport));
+                if (verbose == 3) print_content(prof, verbose, size, packet + 4*tcp->th_off);
+                break;
             }
+            break;
         }
     }
 }

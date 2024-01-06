@@ -32,6 +32,7 @@ void parse_icmp(const u_char *packet, int verbose, int prof);
 #define ICMP6_NEIGHBOR_SOLICITATION 135
 #define ICMP6_NEIGHBOR_ADVERTISEMENT 136
 #define ICMP6_REDIRECT_MESSAGE 137
+// To be continued...
 
 // Structure of the ICMPv6 header
 struct icmpv6_header {

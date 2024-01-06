@@ -6,7 +6,23 @@ void parse_arp(const u_char *packet, int verbose, int prof) {
     case 1:
     case 2: 
     case 3:
-        PRINT_NEW_STATE(prof, verbose, BHBLU "ARP" BLU);
+        switch (ntohs(arp_header->ea_hdr.ar_pro)) {
+        case ETHERTYPE_IP: // 0x0800
+            PRINT_NEW_STATE(prof, verbose, BHBLU "ARP" BLU " (IP)");
+            break;
+        case ETHERTYPE_IPV6: // 0x08dd
+            PRINT_NEW_STATE(prof, verbose, BHBLU "ARP" BLU " (IPv6)");
+            break;
+        case ETHERTYPE_ARP: // 0x0806
+            PRINT_NEW_STATE(prof, verbose, BHBLU "ARP" BLU " (ARP)");
+            break;
+        case ETHERTYPE_REVARP: // 0x8035
+            PRINT_NEW_STATE(prof, verbose, BHBLU "ARP" BLU " (Reverse ARP)");
+            break;
+        default:
+            PRINT_NEW_STATE(prof, verbose, BHBLU "ARP" BLU "(OTHER THAN IP)");
+            break;
+        }
 
        if(verbose == 1) break ; // No need to print the MACs
 
@@ -41,19 +57,6 @@ void parse_arp(const u_char *packet, int verbose, int prof) {
         }
 
         PRINT_TREE(prof, BBLU "Protocol type : " BLU "%i", ntohs(arp_header->ea_hdr.ar_pro));
-        //TAG for the user's lisibility
-        switch (ntohs(arp_header->ea_hdr.ar_pro)) {
-        case ETHERTYPE_IP: // 0x0800
-            printf(" (IP)\n");
-            break;
-        case ETHERTYPE_IPV6: // 0x08dd
-            printf(" (IPv6)\n");
-            break;
-        default:
-            printf("(OTHER THAN IP)\n");
-            break;
-        }
-
         PRINT_TREE(prof, BBLU "Hardware size : " BLU "%i\n", arp_header->ea_hdr.ar_hln);
         PRINT_TREE(prof, BBLU "Protocol size : " BLU "%i\n", arp_header->ea_hdr.ar_pln);
         PRINT_TREE(prof, BBLU "Opcode : " BLU "%i\n", ntohs(arp_header->ea_hdr.ar_op));

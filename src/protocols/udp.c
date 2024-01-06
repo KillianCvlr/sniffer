@@ -41,7 +41,8 @@ void parse_udp(const u_char *packet, int verbose, int prof, int size) {
             parse_dns(packet + sizeof(struct udphdr), verbose, prof +1, size2);
             break;
         default:
-            PRINT_NEW_STATE(prof +1, verbose, "DATA");
+            PRINT_NEW_STATE(prof +1, verbose, BGRN "DATA" GRN " (%d - %d)", ntohs(udp->uh_sport), ntohs(udp->uh_dport));
+            if (verbose == 3) print_content(prof, verbose, size2, packet + sizeof(struct udphdr));
             break;
         }
         break;

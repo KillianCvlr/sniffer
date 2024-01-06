@@ -15,7 +15,8 @@
         "ip6.h": "c",
         "in.h": "c",
         "args.h": "c",
-        "packet_parser.h": "c"
+        "packet_parser.h": "c",
+        "icmp.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

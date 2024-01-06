@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
     //Options de l'utilisateur
     options_t options;
     
-    printf("Options initialisation... \n");
+    printf(YEL "Options initialisation... \n");
     initOption(&options);
     printf("Option parsing... \n");
     parseArgs(argc, argv, &options);
