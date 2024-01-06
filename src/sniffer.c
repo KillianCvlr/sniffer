@@ -1,11 +1,4 @@
-
-#include <sys/types.h>
-#include <pcap.h>
-#include <stdio.h>
-#include <time.h>
-
 #include "headers.h"
-#include "protocols/packet_parser.h"
 #include "args.h"
 
 

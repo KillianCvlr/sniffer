@@ -13,7 +13,9 @@
         "stdio.h": "c",
         "headers.h": "c",
         "ip6.h": "c",
-        "in.h": "c"
+        "in.h": "c",
+        "args.h": "c",
+        "packet_parser.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }
